@@ -1,9 +1,11 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import configparser
 import yaml
 import secrets
 from werkzeug.utils import secure_filename
 import os
+import alsaaudio
+
 
 CONFIG_FILE = 'config.yml'
 
@@ -34,14 +36,21 @@ def get_balise_dict_infos():
         config = yaml.load(c, Loader=yaml.SafeLoader)
     volume = int(config['INFOS']['volume'])
     volume = unmap_volume(volume)
-    nom = config['INFOS']['nom']
-    lieu = config['INFOS']['lieu']
-    default_message = int(config['INFOS']['default_message'])
-    plages_horaires = config['INFOS']['plages_horaires']
-    return {'balId':3434 ,'nom':nom, 'lieu':lieu, \
-        'defaultMessage':default_message, \
-        'volume':volume, \
-        'plages_horaires':plages_horaires}
+    balise = config["INFOS"]
+    balise.update({"volume":volume})
+    print(balise)
+    return balise
+
+def get_balise_dict():
+    with open(CONFIG_FILE) as c:
+        config = yaml.load(c, Loader=yaml.SafeLoader)
+    volume = int(config['INFOS']['volume'])
+    volume = unmap_volume(volume)
+    balise = config["INFOS"]
+    balise.update({"volume":volume})
+    annonces = config["ANNONCES"]
+    timeslots = config["TIME_SLOTS"]
+    return {"balise":balise, "annonces":annonces, "timeslots":timeslots}
 
 def get_annonces_dict():
     with open(CONFIG_FILE) as c:
@@ -58,10 +67,10 @@ def clean_unused_sounds():
 def index():
     return 'Hello world'
 
-@app.route('/infos', methods=['GET'])
+@app.route('/balise', methods=['GET'])
 def query_infos():
     try:
-        return jsonify(get_balise_dict_infos()), 200
+        return jsonify(get_balise_dict()), 200
     except:
         return jsonify({'error': 'data not found'}), 204
 
@@ -83,6 +92,25 @@ def set_volume():
     except:
         return jsonify({'error':'failed to update volume'}), 400
 
+
+
+@app.route('/plages_horaire', methods=['POST'])
+def set_plages_horaire():
+    try:
+        data = request.get_json(force=True)
+        print(data)
+        plages_horaire = data.get("plages_horaire")
+        # save to configfile
+        with open(CONFIG_FILE) as c:
+            config = yaml.load(c, Loader=yaml.SafeLoader)
+        config['INFOS']['plages_horaire'] = plages_horaire
+        with open(CONFIG_FILE, "w") as c:
+            yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
+        return jsonify(get_balise_dict_infos()), 200
+    except:
+        return jsonify({'error':'failed to update plages_horaire'}), 400
+
+
 @app.route('/infos', methods=['POST'])
 def set_infos():
     try:
@@ -100,9 +128,6 @@ def set_infos():
     except:
         return jsonify({'error':'failed to update name or/and place'}), 400
 
-@app.route('/plages_horaires', methods=['POST'])
-def set_plages_horaires():
-    pass
 
 @app.route('/defaultmessage', methods=['POST'])
 def set_default_message():
@@ -138,10 +163,14 @@ def add_annonce():
         duree = data.get("duree")
         with open(CONFIG_FILE) as c:
             config = yaml.load(c, Loader=yaml.SafeLoader)
-        new_annonce = {"id_annonce":id_annonce, "nom":nom, "type":type, \
+        print("non")
+
+        new_annonce = {"id_annonce":id_annonce, "nom":nom, "type":type, 
             "filename":filename,
             "contenu":contenu, "lang":lang, "duree":duree}
         config["ANNONCES"].append(new_annonce)
+        print("oui")
+
         with open(CONFIG_FILE, "w") as c:
             yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
         response_body = new_annonce
@@ -182,7 +211,7 @@ def set_annonce():
     except:
         return jsonify({'error':'failed to send the sound test'}), 400
 
-@app.route('/annonce', methods=['DELETE'])
+@app.route('/delannonce', methods=['POST'])
 def delete_annonce():
     try:
         data = request.get_json(force=True)
@@ -194,7 +223,7 @@ def delete_annonce():
         # get annonce from id_annonce
         index_annonce = next((i for i, item in enumerate(annonces) if item["id_annonce"] == id_annonce), None)
         if index_annonce is not None:
-            del annonces[id_annonces]
+            del annonces[index_annonce]
             # save to configfile
             with open(CONFIG_FILE, "w") as c:
                 yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
@@ -218,7 +247,9 @@ def upload_sound():
                 filename = secure_filename(file.filename)
                 print(filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'audio', filename))
-            return jsonify({"code":33}), 200
+                return jsonify({"code":33}), 200
+            else:
+              return jsonify({'error':'failed to upload audio file'}), 400
         except:
             return jsonify({'error':'failed to upload audio file'}), 400
     return jsonify({'error':'failed to upload audio file'}), 403
@@ -241,7 +272,10 @@ def test_balise():
         print(filename)
         audio_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'audio', filename)
         volume = int(config['INFOS']['volume'])
-        volume = int(volume*1024/100)
+        print(volume)
+        m = alsaaudio.Mixer('DAC')
+        m.getvolume()
+        m.setvolume(volume)        
         # play sound
         if (result["type"]=="AUDIO") :
             vlc_command = f"vlc --play-and-exit {audio_file_path}"
@@ -252,6 +286,114 @@ def test_balise():
         return jsonify({'success':'sound test sent'}), 200
     except:
         return jsonify({'error':'failed to send the sound test'}), 400
+
+
+@app.route('/timeslots', methods=['PUT'])
+def add_timeslot():
+    try:
+        data = request.get_json(force=True)
+        print(data)
+        id_timeslot = int(data.get("id_timeslot"))
+        id_annonce = data.get("id_annonce")
+        monday = data.get("monday")
+        tuesday = data.get("tuesday")
+        wednesday = data.get("wednesday")
+        thursday = data.get("thursday")
+        friday = data.get("friday")
+        saturday = data.get("saturday")
+        sunday = data.get("sunday")
+        time_start = data.get("time_start")
+        time_end = data.get("time_end")
+        with open(CONFIG_FILE) as c:
+            config = yaml.load(c, Loader=yaml.SafeLoader)
+        new_timeslot = {"id_timeslot":id_timeslot, "id_annonce":id_annonce, "monday":monday, 
+            "tuesday":tuesday, "wednesday":wednesday, "thursday":thursday, "friday":friday, 
+            "saturday":saturday, "sunday":sunday, "time_start":time_start, "time_end":time_end}
+        config["TIME_SLOTS"].append(new_timeslot)
+        with open(CONFIG_FILE, "w") as c:
+            yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
+        return jsonify(new_timeslot), 201
+    except:
+        return 'oups', 400
+
+
+@app.route('/timeslots', methods=['POST'])
+def set_timeslot():
+    try:
+        data = request.get_json(force=True)
+        print(data)
+        id_timeslot = int(data.get("id_timeslot"))
+        id_annonce = data.get("id_annonce")
+        monday = data.get("monday")
+        tuesday = data.get("tuesday")
+        wednesday = data.get("wednesday")
+        thursday = data.get("thursday")
+        friday = data.get("friday")
+        saturday = data.get("saturday")
+        sunday = data.get("sunday")
+        time_start = data.get("time_start")
+        time_end = data.get("time_end")
+        with open(CONFIG_FILE) as c:
+            config = yaml.load(c, Loader=yaml.SafeLoader)
+        timeslots = config['TIME_SLOTS']
+        # get timeslots from id_timeslot
+        index_timeslot = next((i for i, item in enumerate(timeslots) if item["id_timeslot"] == id_timeslot), None)
+        if index_timeslot is not None:
+            updated_timeslot = {"id_timeslot":id_timeslot, "id_annonce":id_annonce, "monday":monday, 
+            "tuesday":tuesday, "wednesday":wednesday, "thursday":thursday, "friday":friday, 
+            "saturday":saturday, "sunday":sunday, "time_start":time_start, "time_end":time_end}
+            # save to configfile
+            config["TIME_SLOTS"][index_timeslot] = updated_timeslot
+            with open(CONFIG_FILE, "w") as c:
+                yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
+            return jsonify(updated_timeslot), 200
+        else:
+            return jsonify({'error':'timeslot not found'}), 404
+    except:
+        return jsonify({'error':'failed to send the id test'}), 400
+
+
+
+@app.route('/deltimeslot', methods=['POST'])
+def delete_timeslot():
+    try:
+        data = request.get_json(force=True)
+        print(data)
+        id_timeslot = int(data.get("id_timeslot"))
+        with open(CONFIG_FILE) as c:
+            config = yaml.load(c, Loader=yaml.SafeLoader)
+        timeslots = config['TIME_SLOTS']
+        # get time slot from id_timeslot
+        index_timeslot = next((i for i, item in enumerate(timeslots) if item["id_timeslot"] == id_timeslot), None)
+        if index_timeslot is not None:
+            del timeslots[index_timeslot]
+            # save to configfile
+            with open(CONFIG_FILE, "w") as c:
+                yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
+            return jsonify({'id_timeslot':id_timeslot}), 200
+        else:
+            return jsonify({'error':'time slot not found'}), 404
+    except:
+        return jsonify({'error':'failed to send the id test'}), 400
+
+
+@app.route('/annonce/sound/<int:id_annonce>', methods=['GET'])
+def download_files(id_annonce):
+    try:
+        with open(CONFIG_FILE) as c:
+            config = yaml.load(c, Loader=yaml.SafeLoader)
+        annonces = config['ANNONCES']
+        # get annonce from id_annonce
+        index_annonce = next((i for i, item in enumerate(annonces) if item["id_annonce"] == id_annonce), None)
+        if index_annonce is not None:
+            filename = annonces[index_annonce]["filename"]
+            print(filename)
+            path = os.path.join(app.config['UPLOAD_FOLDER'], 'audio')
+            return send_from_directory(path, filename, as_attachment=True), 200
+        else:
+            return jsonify({'error':'soundfile not found'}), 404
+    except:
+        return jsonify({'error':'failed to download soundfile'}), 400
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
