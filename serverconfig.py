@@ -264,7 +264,7 @@ def test_balise():
         # get annonce from default_message id
         result = next((item for item in annonces if item["id_annonce"] == default_message), None)
         # check if filename exists
-        if "filename" in result:
+        if result is not None and "filename" in result:
             filename = result["filename"]
 #            print(filename)
         else:
@@ -385,7 +385,7 @@ def download_files(id_annonce):
         annonces = config['ANNONCES']
         # get annonce from id_annonce
         index_annonce = next((i for i, item in enumerate(annonces) if item["id_annonce"] == id_annonce), None)
-        if index_annonce is not None:
+        if index_annonce is not None and "filename" in annonces[index_annonce]:
             filename = annonces[index_annonce]["filename"]
             print(filename)
             path = os.path.join(app.config['UPLOAD_FOLDER'], 'audio')
