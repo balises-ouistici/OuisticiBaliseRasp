@@ -11,14 +11,22 @@ from time import sleep
 import configparser
 import yaml
 from datetime import datetime
+import os
+import alsaaudio
+
 
 CONFIG_FILE = 'config.yml'
+SOUNDS_FOLDER = '/home/pi/uploads/audio/'
+
+RTLSDR_GAIN = 1.2
 
 with open(CONFIG_FILE) as c:
     configYAML = yaml.load(c, Loader=yaml.SafeLoader)
 
 config = configparser.ConfigParser()
 config.read('config.ini')
+VOLUME = config['INFOS']['volume']
+
 
 '''
 AUTOVOLUME = configYAML['DEFAULT']['autovolume']
@@ -34,68 +42,49 @@ def sound_to_play():
     # default annonce to play
     id_annonce = configYAML['INFOS']['default_message']
     # check annonce to play from timeslots
-    timeslots = configYAML['TIME_SLOTS']
-    for ts in timeslots:
-        if day.lower() in ts and ts[day.lower()]:
-            start = datetime.strptime(ts['time_start'], "%H:%M")
-            end = datetime.strptime(ts['time_start'], "%H:%M")
-            if start < time and time < end:
-                id_annonce = ts['id_annonce']
+    if configYAML['INFOS']['timeslots']:
+        timeslots = configYAML['TIME_SLOTS']
+        for ts in timeslots:
+            if day.lower() in ts and ts[day.lower()]:
+                start = datetime.strptime(ts['time_start'], "%H:%M").time()
+                end = datetime.strptime(ts['time_start'], "%H:%M").time()
+                if start < time and time < end:
+                    id_annonce = ts['id_annonce']
     # get annonce and filename
+    filename = None
     annonces = configYAML['ANNONCES']
     result = next((item for item in annonces if item["id_annonce"] == id_annonce), None)
     if result is not None and "filename" in result:
         filename = result["filename"]
+        filename = os.path.join(SOUNDS_FOLDER, filename)
+
+    print(filename)
     return filename
-
-
-'''
-if SWITCH:
-    import RPi.GPIO as GPIO
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    button = int(config.get('DEFAULT', 'switch_pin')) # 4
-    GPIO.setup(button, GPIO.IN, GPIO.PUD_UP)
-
-from bb_autovolume import setDefaultVolume
-if AUTOVOLUME:
-    from bb_autovolume import autovolume_thread_function
-
-sound2_index = 0
-sounds2 = [SOUNDPATH_2_0, SOUNDPATH_2_1]
-
-def set_sound(button):
-    global sound2_index
-    button_state = GPIO.input(button)
-    if button_state == GPIO.HIGH:
-        sleep(0.5)
-        if GPIO.input(button) == GPIO.HIGH:
-            sound2_index = 0
-    else:
-        sleep(0.5)
-        if GPIO.input(button) == GPIO.LOW:
-            sound2_index = 1
-'''
 
 
 def play_thread_function():
     mixer.init()
+    m = alsaaudio.Mixer('DAC')
     while True:
         q.get()
-        mixer.music.load(sound_to_play())
-        setDefaultVolume()
-        '''
-        if AUTOVOLUME:
-            autovolume_q.put('start')
-        '''
-        #sleep(PREDELAY_1)
-        mixer.music.play()
-        while mixer.music.get_busy():
-            sleep(0.2)
-        '''
-        if AUTOVOLUME:
-            autovolume_q.put('stop')
-        '''
+        soundfile = sound_to_play()
+        if soundfile is not None:
+            mixer.music.load(soundfile)
+            '''
+            setDefaultVolume()
+            if AUTOVOLUME:
+                autovolume_q.put('start')
+                sleep(0.5)
+                autovolume_q.put('stop')
+            '''
+            m.getvolume()
+            m.setvolume(volume)
+
+            mixer.music.play()
+ #           vlc_command = f"vlc --play-and-exit {audio_file_path}"
+#            os.system(vlc_command)
+            while mixer.music.get_busy():
+                sleep(0.2)
         q.task_done()
         with q.mutex:
             q.queue.clear()
@@ -121,7 +110,7 @@ if SWITCH:
 
 
 sdr = RtlSdr_NFS32002()
-sdr.sdr.gain = 5
+sdr.sdr.gain = RTLSDR_GAIN
 sdr.startDetection(callback=detect, simple_detect=True)
 
 q.join()

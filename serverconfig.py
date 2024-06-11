@@ -99,16 +99,33 @@ def set_plages_horaire():
     try:
         data = request.get_json(force=True)
         print(data)
-        plages_horaire = data.get("plages_horaire")
+        plages_horaire = data.get("timeslots")
         # save to configfile
         with open(CONFIG_FILE) as c:
             config = yaml.load(c, Loader=yaml.SafeLoader)
-        config['INFOS']['plages_horaire'] = plages_horaire
+        config['INFOS']['timeslots'] = plages_horaire
         with open(CONFIG_FILE, "w") as c:
             yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
         return jsonify(get_balise_dict_infos()), 200
     except:
-        return jsonify({'error':'failed to update plages_horaire'}), 400
+        return jsonify({'error':'failed to update timeslots'}), 400
+
+
+@app.route('/autovolume', methods=['POST'])
+def set_autovolume():
+    try:
+        data = request.get_json(force=True)
+        print(data)
+        autovolume = data.get("autovolume")
+        # save to configfile
+        with open(CONFIG_FILE) as c:
+            config = yaml.load(c, Loader=yaml.SafeLoader)
+        config['INFOS']['autovolume'] = autovolume
+        with open(CONFIG_FILE, "w") as c:
+            yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
+        return jsonify(get_balise_dict_infos()), 200
+    except:
+        return jsonify({'error':'failed to update autovolume'}), 400
 
 
 @app.route('/infos', methods=['POST'])
@@ -117,11 +134,18 @@ def set_infos():
         data = request.get_json(force=True)
         nom = data.get("nom")
         lieu = data.get("lieu")
+        default_message = data.get("id_message")
+        try:
+            default_message = int(default_message)
+        except:
+            default_message = None
+
         # save to configfile
         with open(CONFIG_FILE) as c:
             config = yaml.load(c, Loader=yaml.SafeLoader)
         config['INFOS']['nom'] = nom
         config['INFOS']['lieu'] = lieu
+        config['INFOS']['default_message'] = default_message
         with open(CONFIG_FILE, "w") as c:
             yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
         return jsonify(get_balise_dict_infos()), 200
@@ -133,8 +157,11 @@ def set_infos():
 def set_default_message():
     try:
         data = request.get_json(force=True)
-        print(data)
-        default_message = int(data.get("id_message"))
+        default_message = data.get("id_message")
+        try:
+            default_message = int(default_message)
+        except:
+            default_message = None
         # save to configfile
         with open(CONFIG_FILE) as c:
             config = yaml.load(c, Loader=yaml.SafeLoader)
@@ -224,6 +251,8 @@ def delete_annonce():
         index_annonce = next((i for i, item in enumerate(annonces) if item["id_annonce"] == id_annonce), None)
         if index_annonce is not None:
             del annonces[index_annonce]
+            if config['INFOS']['default_message'] == index_annonce:
+                config['INFOS']['default_message'] = None
             # save to configfile
             with open(CONFIG_FILE, "w") as c:
                 yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
@@ -247,6 +276,11 @@ def upload_sound():
                 filename = secure_filename(file.filename)
                 print(filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'audio', filename))
+                # todo :
+                #file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'audio', 'tempsound'))
+                #outputfilename = os.path.join(app.config['UPLOAD_FOLDER'], 'audio', filename)
+                #command = "ffmpeg -i tempsound {outputfilename}"
+                #os.system(command)
                 return jsonify({"code":33}), 200
             else:
               return jsonify({'error':'failed to upload audio file'}), 400
@@ -268,14 +302,14 @@ def test_balise():
             filename = result["filename"]
 #            print(filename)
         else:
-            filename = 'Balise1-0.wav'
+            return jsonify({'error':'failed to send the sound test'}), 400
         print(filename)
         audio_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'audio', filename)
         volume = int(config['INFOS']['volume'])
         print(volume)
         m = alsaaudio.Mixer('DAC')
         m.getvolume()
-        m.setvolume(volume)        
+        m.setvolume(volume)
         # play sound
         if (result["type"]=="AUDIO") :
             vlc_command = f"vlc --play-and-exit {audio_file_path}"
@@ -395,5 +429,8 @@ def download_files(id_annonce):
     except:
         return jsonify({'error':'failed to download soundfile'}), 400
 
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
+
+

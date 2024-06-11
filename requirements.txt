@@ -2,3 +2,4 @@ rtlsdr_nfs32002
 pygame
 pyaudio
 pyalsaaudio
+pyyaml

@@ -1,11 +1,11 @@
 INFOS:
   idBal: 1862
-  nom: Balise1
-  lieu: Accueil
-  default_message: 1
-  autovolume: false
-  volume: 86
-  plages_horaire: false
+  nom: Balise 17
+  lieu: oii
+  default_message: 7
+  autovolume: true
+  volume: 88
+  timeslots: true
 DEFAULT:
   volume: 72
   autovolume: false
@@ -14,99 +14,81 @@ DEFAULT:
   switch_pin: 4
 ANNONCES:
 - id_annonce: 0
-  nom: salut
-  type: TEXTE
-  filename: Balise1-0.wav
-  contenu: salut
-  lang: fr
-  duree: 0
-- id_annonce: 1
-  nom: g
+  nom: bonjour
   type: AUDIO
-  filename: Balise1-1.wav
+  filename: 0.wav
+  contenu: ''
+  lang: ''
+  duree: 3
+- id_annonce: 1
+  nom: pii
+  type: AUDIO
+  filename: 1.wav
   contenu: ''
   lang: ''
   duree: 2
 - id_annonce: 2
-  nom: fgg
+  nom: jf
   type: AUDIO
-  filename: aaaah.m4a7751902633298844232.tmp
+  filename: 2.wav
+  contenu: ''
+  lang: ''
+  duree: 1
+- id_annonce: 3
+  nom: salut salut
+  type: AUDIO
+  filename: 3.wav
   contenu: ''
   lang: ''
   duree: 2
-- id_annonce: 0
-  nom: jdjd
+- id_annonce: 4
+  nom: 30s
   type: AUDIO
-  filename: Balise1-0.wav
+  filename: 4.wav
   contenu: ''
   lang: ''
-  duree: 1
-- id_annonce: 0
-  nom: jdkd
-  type: AUDIO
-  filename: Balise1-0.wav
-  contenu: ''
-  lang: ''
-  duree: 1
-- id_annonce: 0
+  duree: 30
+- id_annonce: 5
   nom: salut
-  type: TEXTE
-  filename: Balise1-0.wav
-  contenu: salut
-  lang: en
-  duree: 0
-- id_annonce: 1
-  nom: baaba
   type: AUDIO
-  filename: Balise1-1.wav
+  filename: 5.wav
   contenu: ''
   lang: ''
   duree: 2
-- id_annonce: 2
-  nom: Bonjour
-  type: TEXTE
-  filename: Balise1-2.wav
-  contenu: Bonjour et bienvenue  l'accueil des petits debrouillards, nous sommes ouverts
-    de 9h a 17h et c'est super sympa
-  lang: fr
-  duree: 0
-- id_annonce: 0
-  nom: salut
-  type: TEXTE
-  filename: Balise1-0.wav
-  contenu: salut
-  lang: fr
-  duree: 0
-- id_annonce: 1
-  nom: hh
+- id_annonce: 6
+  nom: blabla
   type: AUDIO
-  filename: Balise1-1.wav
+  filename: 6.wav
   contenu: ''
   lang: ''
-  duree: 1
-- id_annonce: 0
-  nom: salut
-  type: TEXTE
-  filename: Balise1-0.wav
-  contenu: samut
-  lang: fr
-  duree: 940
-- id_annonce: 0
+  duree: 2
+- id_annonce: 7
   nom: Salut
-  type: AUDIO
-  filename: Balise1-0.wav
-  contenu: Salut
+  type: TEXTE
+  filename: 7.wav
+  contenu: "comment allez vous moi \xE7a va super bien a l unadev"
   lang: fr
-  duree: 0
-- id_annonce: 1
-  nom: Test
+  duree: 3
+- id_annonce: 8
+  nom: Aaaaah
   type: AUDIO
-  filename: Balise1-1.wav
-  contenu: "Bonjour et bienvenue au McDonald's de Clermont Ferrand, nous pouvons vous\
-    \ h\xE9berger si vous le souhaitez car nous sommes des personnes fort sympathique"
-  lang: fr
-  duree: 0
+  filename: 8.wav
+  contenu: ''
+  lang: ''
+  duree: 2
 OPTIONS:
   multiple_announces: true
   internet_access: true
   tts: false
+TIME_SLOTS:
+- id_timeslot: 0
+  id_annonce: 0
+  monday: true
+  tuesday: false
+  wednesday: true
+  thursday: false
+  friday: true
+  saturday: false
+  sunday: false
+  time_start: '10:01'
+  time_end: '12:01'
