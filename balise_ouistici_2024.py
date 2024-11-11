@@ -3,7 +3,7 @@
 # pip install rtlsdr-nfs32002
 #import sys
 #sys.path.append('/home/pi/balises/rtlsdr')
-from rtlsdr_nfs32002.protocol import *
+from rtlsdr_nfs32002.protocol import RtlSdr_NFS32002
 from pygame import mixer
 from threading import Thread
 import queue
@@ -17,7 +17,7 @@ import alsaaudio
 CONFIG_FILE = 'config.yml'
 SOUNDS_FOLDER = '/home/pi/uploads/audio/'
 
-RTLSDR_GAIN = 1.2
+RTLSDR_GAIN = 0.5
 
 with open(CONFIG_FILE) as c:
     configYAML = yaml.load(c, Loader=yaml.SafeLoader)
@@ -106,8 +106,9 @@ if SWITCH:
 
 
 sdr = RtlSdr_NFS32002()
-sdr.sdr.gain = RTLSDR_GAIN
-sdr.startDetection(callback=detect, simple_detect=True)
+# sdr.setManualGain(RTLSDR_GAIN)
+sdr.setAutomaticGain()
+sdr.startDetection(callback=detect, error_rate = 0.2, simple_detect=False)
 
 q.join()
 
