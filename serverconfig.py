@@ -347,10 +347,10 @@ def upload_sound():
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 print(filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'audio', filename))
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 # TODO ?? convert to wave
-                #file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'audio', 'tempsound'))
-                #outputfilename = os.path.join(app.config['UPLOAD_FOLDER'], 'audio', filename)
+                #file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'tempsound'))
+                #outputfilename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 #command = "ffmpeg -i tempsound {outputfilename}"
                 #os.system(command)
                 return jsonify({"code":33}), 200
@@ -381,7 +381,7 @@ def test_balise():
         else:
             return jsonify({'error':'failed to send the sound test'}), 400
         print(filename)
-        audio_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'audio', filename)
+        audio_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         volume = int(config['INFOS']['volume'])
         print(volume)
         m = alsaaudio.Mixer('DAC')
@@ -545,7 +545,7 @@ def download_files(id_annonce):
         if index_annonce is not None and "filename" in annonces[index_annonce]:
             filename = annonces[index_annonce]["filename"]
             print(filename)
-            path = os.path.join(app.config['UPLOAD_FOLDER'], 'audio')
+            path = os.path.join(app.config['UPLOAD_FOLDER'])
             return send_from_directory(path, filename, as_attachment=True), 200
         else:
             return jsonify({'error':'soundfile not found'}), 404
