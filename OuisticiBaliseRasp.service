@@ -1,0 +1,16 @@
+[Unit]
+Description=Ouistici Balise Raspberry Pi
+After=network.target
+
+[Service]
+ExecStart=/bin/python3 /home/pi/balises/balise_ouistici_2024.py
+WorkingDirectory=/home/pi/balises/
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+RestartSec=5
+Type=simple
+#User=balise
+
+[Install]
+WantedBy=multi-user.target 
