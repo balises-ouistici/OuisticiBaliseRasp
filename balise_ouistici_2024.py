@@ -7,12 +7,13 @@ from rtlsdr_nfs32002.protocol import RtlSdr_NFS32002
 from pygame import mixer
 from threading import Thread
 import queue
-from time import sleep
+from time import sleep, time
 import yaml
 from datetime import datetime
 import os
 import alsaaudio
 from utils import get_local_ip
+import RPi.GPIO as GPIO
 
 import asyncio
 import uuid
@@ -46,9 +47,14 @@ VOLUME = configYAML['INFOS']['volume']
 AUTOVOLUME = configYAML['DEFAULT']['autovolume']
 
 CALL_BUTTON_ENABLED = True
-CALL_BUTTON = 5
+CALL_BUTTON = 4
 NAV_BUTTON_ENABLED = False
-NAV_BUTTON = 6
+NAV_BUTTON = 17
+
+if CALL_BUTTON_ENABLED:
+    # GPIO.setmode(GPIO.BOARD)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(CALL_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 def sound_to_play():
     # get time
@@ -173,11 +179,24 @@ if AUTOVOLUME:
     autovolume_q = queue.Queue()
     autovolume_thread = Thread(target=autovolume_thread_function,args=(autovolume_q,))
     autovolume_thread.start()
-
-if SWITCH: 
-    GPIO.add_event_detect(button, GPIO.BOTH, callback=set_sound)
 '''
+def myInterrupt(channel):
+    start_time = time()
+    while GPIO.input(channel) == 0: # Wait for the button up
+        # pass
+        sleep(0.1)
+    buttonTime = time() - start_time
+    print(buttonTime)
+    if buttonTime >= 5:
+        # long push
+        print("Long Push ! Get IP !")
+        q.put("get_ip")
+    else:
+        print("Ouistici Button !")
+        q.put("ouistici button")
 
+if CALL_BUTTON_ENABLED: 
+    GPIO.add_event_detect(CALL_BUTTON, GPIO.FALLING, callback=myInterrupt, bouncetime=500 )
 
 sdr = RtlSdr_NFS32002()
 # sdr.setManualGain(RTLSDR_GAIN)
