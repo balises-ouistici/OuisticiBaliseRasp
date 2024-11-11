@@ -12,6 +12,7 @@ import yaml
 from datetime import datetime
 import os
 import alsaaudio
+from utils import get_local_ip
 
 import asyncio
 import uuid
@@ -115,13 +116,48 @@ async def ble_server(loop):
     await server.start()
     print(f"BLE server started with service {service_name}")
 
+def play_sound(m, mixer, soundfile):
+    mixer.music.load(soundfile)
+    '''
+    setDefaultVolume()
+    if AUTOVOLUME:
+        autovolume_q.put('start')
+        sleep(0.5)
+        autovolume_q.put('stop')
+    '''
+    m.getvolume()
+    m.setvolume(VOLUME)
+    mixer.music.play()
+    # vlc_command = f"vlc --play-and-exit {audio_file_path}"
+    # os.system(vlc_command)
+    while mixer.music.get_busy():
+        sleep(0.2)
+
+def play_thread_function():
+    mixer.init()
+    m = alsaaudio.Mixer('DAC')
+
+    while True:
+        task = q.get()
+        if task == "get_ip":
+            play_sound(m, mixer, "/home/pi/balises/media/ip/bip.wav")
+            if get_local_ip("/home/pi/balises/media/ip/ip.wav"):
+                play_sound(m, mixer, "/home/pi/balises/media/ip/ip.wav")
+            else:
+                play_sound(m, mixer, "/home/pi/balises/media/ip/ip_not_found.wav")
+        else:
+            soundfile = sound_to_play()
+            if soundfile is not None:
+                play_sound(m, mixer, soundfile)
+            else:
+                play_sound(m, mixer, "/home/pi/balises/media/examples/bip.wav")
         q.task_done()
         with q.mutex:
             q.queue.clear()
 
 def detect():
     print("Ouistici !")
-    q.put("Ouistici !")
+    q.put("ouistici")
 
 q = queue.Queue()
 
