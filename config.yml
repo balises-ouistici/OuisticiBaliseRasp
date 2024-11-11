@@ -1,10 +1,10 @@
 INFOS:
   idBal: 1862
-  nom: Balise 17
-  lieu: oii
-  default_message: 7
+  nom: UNADEV
+  lieu: "Entr\xE9e"
+  default_message: 0
   autovolume: true
-  volume: 88
+  volume: 100
   timeslots: true
 DEFAULT:
   volume: 72
@@ -14,81 +14,14 @@ DEFAULT:
   switch_pin: 4
 ANNONCES:
 - id_annonce: 0
-  nom: bonjour
-  type: AUDIO
-  filename: 0.wav
-  contenu: ''
-  lang: ''
-  duree: 3
-- id_annonce: 1
-  nom: pii
-  type: AUDIO
-  filename: 1.wav
-  contenu: ''
-  lang: ''
-  duree: 2
-- id_annonce: 2
-  nom: jf
-  type: AUDIO
-  filename: 2.wav
-  contenu: ''
-  lang: ''
-  duree: 1
-- id_annonce: 3
-  nom: salut salut
-  type: AUDIO
-  filename: 3.wav
-  contenu: ''
-  lang: ''
-  duree: 2
-- id_annonce: 4
-  nom: 30s
-  type: AUDIO
-  filename: 4.wav
-  contenu: ''
-  lang: ''
-  duree: 30
-- id_annonce: 5
-  nom: salut
-  type: AUDIO
-  filename: 5.wav
-  contenu: ''
-  lang: ''
-  duree: 2
-- id_annonce: 6
-  nom: blabla
-  type: AUDIO
-  filename: 6.wav
-  contenu: ''
-  lang: ''
-  duree: 2
-- id_annonce: 7
-  nom: Salut
+  nom: testt
   type: TEXTE
-  filename: 7.wav
-  contenu: "comment allez vous moi \xE7a va super bien a l unadev"
+  filename: 0.wav
+  contenu: bonjourr
   lang: fr
-  duree: 3
-- id_annonce: 8
-  nom: Aaaaah
-  type: AUDIO
-  filename: 8.wav
-  contenu: ''
-  lang: ''
-  duree: 2
+  duree: 1
 OPTIONS:
   multiple_announces: true
   internet_access: true
   tts: false
-TIME_SLOTS:
-- id_timeslot: 0
-  id_annonce: 0
-  monday: true
-  tuesday: false
-  wednesday: true
-  thursday: false
-  friday: true
-  saturday: false
-  sunday: false
-  time_start: '10:01'
-  time_end: '12:01'
+TIME_SLOTS: []

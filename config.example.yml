@@ -66,8 +66,8 @@ ANNONCES:
   nom: Bonjour
   type: TEXTE
   filename: Balise1-2.wav
-  contenu: Bonjour et bienvenue  l'accueil des petits debrouillards, nous sommes ouverts
-    de 9h a 17h et c'est super sympa
+  contenu: "Bonjour et bienvenue  l'accueil des petits debrouillards, nous sommes ouverts 
+    de 9h a 17h et c'est super sympa"
   lang: fr
   duree: 0
 - id_annonce: 0
@@ -106,6 +106,13 @@ ANNONCES:
     \ h\xE9berger si vous le souhaitez car nous sommes des personnes fort sympathique"
   lang: fr
   duree: 0
+- id_annonce: 1
+  nom: oui
+  type: AUDIO
+  filename: Balise1-1.wav
+  contenu: orjfjfjffjfjfjffjfjffjfjfjfjfkffkfkfkfkfkfjfjffjjfjgjgjgjfjff
+  lang: fr
+  duree: 2
 OPTIONS:
   multiple_announces: true
   internet_access: true
