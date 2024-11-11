@@ -13,6 +13,25 @@ from datetime import datetime
 import os
 import alsaaudio
 
+import asyncio
+import uuid
+from bless import (  # type: ignore
+    BlessServer,
+    BlessGATTCharacteristic,
+    GATTCharacteristicProperties,
+    GATTAttributePermissions,
+)
+
+# generate uuid if none exists in uuid.conf
+def generate_uuid():
+    try:
+        with open("uuid.conf", "r") as f:
+            return f.read()
+    except FileNotFoundError:
+        new_uuid = str(uuid.uuid4())
+        with open("uuid.conf", "w") as f:
+            f.write(new_uuid)
+        return new_uuid
 
 CONFIG_FILE = 'config.yml'
 SOUNDS_FOLDER = '/home/pi/balises/media/uploads/'
@@ -57,30 +76,45 @@ def sound_to_play():
     print(filename)
     return filename
 
-def play_thread_function():
-    mixer.init()
-    m = alsaaudio.Mixer('DAC')
+# read request for the characteristic
+def read_request(characteristic: BlessGATTCharacteristic, **kwargs):
+    # return the value of the characteristic
+    return characteristic.value
 
-    while True:
-        q.get()
-        soundfile = sound_to_play()
-        if soundfile is not None:
-            mixer.music.load(soundfile)
-            '''
-            setDefaultVolume()
-            if AUTOVOLUME:
-                autovolume_q.put('start')
-                sleep(0.5)
-                autovolume_q.put('stop')
-            '''
-            m.getvolume()
-            m.setvolume(VOLUME)
+def write_request(characteristic: BlessGATTCharacteristic, value, **kwargs):
+    # if 0xDEADBEEF is written to the characteristic, print "NICE"
+    print(value)
+    if value == b'\x93\x19\x06\x19':
+        detect()
 
-            mixer.music.play()
- #           vlc_command = f"vlc --play-and-exit {audio_file_path}"
-#            os.system(vlc_command)
-            while mixer.music.get_busy():
-                sleep(0.2)
+async def ble_server(loop):
+    # BLE Configuration
+    # Instantiate the server
+    service_name= "BALISE"
+    server = BlessServer(name=service_name, loop=loop)
+
+    server.read_request_func = read_request
+    server.write_request_func = write_request
+
+    # Add Service
+    ble_service_uid = generate_uuid()
+    await server.add_new_service(ble_service_uid)
+
+    # Add a Characteristic to the service
+    char_uid = "01234567-89ab-cdef-0123-456789abcdef"
+    char_flags = (
+        GATTCharacteristicProperties.read
+        | GATTCharacteristicProperties.write
+        | GATTCharacteristicProperties.indicate
+    )
+    permissions = GATTAttributePermissions.readable | GATTAttributePermissions.writeable
+    await server.add_new_characteristic(
+        ble_service_uid, char_uid, char_flags, None, permissions
+    )
+
+    await server.start()
+    print(f"BLE server started with service {service_name}")
+
         q.task_done()
         with q.mutex:
             q.queue.clear()
@@ -93,6 +127,10 @@ q = queue.Queue()
 
 play_thread = Thread(target=play_thread_function)
 play_thread.start()
+
+# non-blocking ble server start
+loop = asyncio.get_event_loop()
+loop.create_task(ble_server(loop))
 
 '''
 if AUTOVOLUME:
