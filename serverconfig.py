@@ -8,7 +8,7 @@ import alsaaudio
 
 CONFIG_FILE = 'config.yml'
 
-UPLOAD_FOLDER = '/home/pi/uploads/'
+UPLOAD_FOLDER = '/home/pi/balises/media/uploads/'
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'wave', 'tmp'}
 MAX_CONTENT_LENGTH = 16 * 1000 * 1000
 
@@ -68,6 +68,11 @@ def index():
 
 @app.route('/balise', methods=['GET'])
 def query_infos():
+    '''
+    Get the balise
+    GET /balise
+    Returns the balise dict if successful
+    '''
     try:
         return jsonify(get_balise_dict()), 200
     except:
@@ -75,6 +80,11 @@ def query_infos():
 
 @app.route('/volume', methods=['POST'])
 def set_volume():
+    '''
+    Set the volume of the balise
+    POST /volume {volume: int}
+    Returns the updated balise dict infos if successful
+    '''
     try:
         data = request.get_json(force=True)
         volume = int(data.get("volume"))
@@ -94,6 +104,11 @@ def set_volume():
 
 @app.route('/plages_horaire', methods=['POST'])
 def set_plages_horaire():
+    '''
+    Set the timeslots of the balise
+    POST /plages_horaire {timeslots: list}
+    Returns the updated balise dict infos if successful
+    '''
     try:
         data = request.get_json(force=True)
         print(data)
@@ -111,6 +126,11 @@ def set_plages_horaire():
 
 @app.route('/autovolume', methods=['POST'])
 def set_autovolume():
+    '''
+    Set the autovolume of the balise
+    POST /autovolume {autovolume: bool}
+    Returns the updated balise dict infos if successful
+    '''
     try:
         data = request.get_json(force=True)
         print(data)
@@ -128,6 +148,11 @@ def set_autovolume():
 
 @app.route('/infos', methods=['POST'])
 def set_infos():
+    '''
+    Set the name and place of the balise
+    POST /infos {nom: string, lieu: string}
+    Returns the updated balise dict infos if successful
+    '''
     try:
         data = request.get_json(force=True)
         nom = data.get("nom")
@@ -153,6 +178,11 @@ def set_infos():
 
 @app.route('/defaultmessage', methods=['POST'])
 def set_default_message():
+    '''
+    Set the default message of the balise
+    POST /defaultmessage {id_message: int}
+    Returns the updated balise dict infos if successful
+    '''
     try:
         data = request.get_json(force=True)
         default_message = data.get("id_message")
@@ -172,10 +202,28 @@ def set_default_message():
 
 @app.route('/annonces', methods=['GET'])
 def get_annonces():
+    '''
+    Get the annonces
+    GET /annonces
+    Returns the annonces dict
+    '''
     return jsonify(get_annonces_dict())
 
 @app.route('/annonce', methods=['PUT'])
 def add_annonce():
+    '''
+    Add an annonce
+    PUT /annonce {
+        id_annonce: int, 
+        nom: string, 
+        type: string, 
+        filename: string, 
+        contenu: string, 
+        lang: string, 
+        duree: int
+        }
+    Returns the new annonce if successful
+    '''
     try:
         data = request.get_json(force=True)
         print(data)
@@ -207,6 +255,19 @@ def add_annonce():
 
 @app.route('/annonce', methods=['POST'])
 def set_annonce():
+    '''
+    Modify an annonce
+    POST /annonce {
+        id_annonce: int, 
+        nom: string, 
+        type: string, 
+        filename: string, 
+        contenu: string, 
+        lang: string, 
+        duree: int
+        }
+    Returns the updated annonce if successful
+    '''
     try:
         data = request.get_json(force=True)
         print(data)
@@ -238,6 +299,13 @@ def set_annonce():
 
 @app.route('/delannonce', methods=['POST'])
 def delete_annonce():
+    '''
+    Delete an annonce
+    POST /delannonce {
+        id_annonce: int
+        }
+    Returns the deleted annonce id_annonce if successful
+    '''
     try:
         data = request.get_json(force=True)
         print(data)
@@ -254,6 +322,7 @@ def delete_annonce():
             # save to configfile
             with open(CONFIG_FILE, "w") as c:
                 yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
+            # TODO : delete audiofile
             return jsonify({'id_annonce':id_annonce}), 200
         else:
             return jsonify({'error':'annonce not found'}), 404
@@ -264,6 +333,11 @@ def delete_annonce():
 #@app.route('/annonce/upload_sound/<string:token>', methods=['POST'])
 @app.route('/annonce/upload_sound', methods=['POST'])
 def upload_sound():
+    '''
+    Upload an audiofile
+    POST /annonce/upload_sound {audiofile: file}
+    Returns {code: 33} if successful
+    '''
     if True:
         try:
             file = request.files['audiofile']
@@ -274,7 +348,7 @@ def upload_sound():
                 filename = secure_filename(file.filename)
                 print(filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'audio', filename))
-                # todo :
+                # TODO ?? convert to wave
                 #file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'audio', 'tempsound'))
                 #outputfilename = os.path.join(app.config['UPLOAD_FOLDER'], 'audio', filename)
                 #command = "ffmpeg -i tempsound {outputfilename}"
@@ -288,6 +362,11 @@ def upload_sound():
 
 @app.route('/test_sound', methods=['GET'])
 def test_balise():
+    '''
+    Test the balise
+    GET /test_sound
+    Returns {success:'sound test sent'} if successful
+    '''
     try:
         with open(CONFIG_FILE) as c:
             config = yaml.load(c, Loader=yaml.SafeLoader)
@@ -322,6 +401,23 @@ def test_balise():
 
 @app.route('/timeslots', methods=['PUT'])
 def add_timeslot():
+    '''
+    Add a timeslot
+    PUT /timeslots {
+        id_timeslot: int, 
+        id_annonce: int, 
+        monday: bool, 
+        tuesday: bool, 
+        wednesday: bool, 
+        thursday: bool, 
+        friday: bool, 
+        saturday: bool, 
+        sunday: bool, 
+        time_start: string, 
+        time_end: string
+        }
+    Returns the new timeslot if successful
+    '''
     try:
         data = request.get_json(force=True)
         print(data)
@@ -351,6 +447,23 @@ def add_timeslot():
 
 @app.route('/timeslots', methods=['POST'])
 def set_timeslot():
+    '''
+    Modify a timeslot
+    POST /timeslots {
+        id_timeslot: int, 
+        id_annonce: int, 
+        monday: bool, 
+        tuesday: bool, 
+        wednesday: bool, 
+        thursday: bool, 
+        friday: bool, 
+        saturday: bool, 
+        sunday: bool, 
+        time_start: string, 
+        time_end: string
+        }
+    Returns the updated timeslot if successful
+    '''
     try:
         data = request.get_json(force=True)
         print(data)
@@ -388,6 +501,13 @@ def set_timeslot():
 
 @app.route('/deltimeslot', methods=['POST'])
 def delete_timeslot():
+    '''
+    Delete a timeslot
+    POST /deltimeslot {
+        id_timeslot: int
+        }
+    Returns the deleted timeslot timeslot_id if successful
+    '''
     try:
         data = request.get_json(force=True)
         print(data)
@@ -411,6 +531,11 @@ def delete_timeslot():
 
 @app.route('/annonce/sound/<int:id_annonce>', methods=['GET'])
 def download_files(id_annonce):
+    '''
+    Download the soundfile
+    GET /annonce/sound/<int:id_annonce>
+    Returns the soundfile if successful
+    '''
     try:
         with open(CONFIG_FILE) as c:
             config = yaml.load(c, Loader=yaml.SafeLoader)
