@@ -15,7 +15,7 @@ import alsaaudio
 
 
 CONFIG_FILE = 'config.yml'
-SOUNDS_FOLDER = '/home/pi/uploads/audio/'
+SOUNDS_FOLDER = '/home/pi/balises/media/uploads/'
 
 RTLSDR_GAIN = 0.5
 
