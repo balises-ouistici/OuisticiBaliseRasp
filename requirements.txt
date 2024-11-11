@@ -4,4 +4,6 @@ pyaudio
 pyalsaaudio
 pyyaml
 bless
+numpy
+scipy
 dimits
