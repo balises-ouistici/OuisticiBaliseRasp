@@ -4,7 +4,7 @@
 import pyaudio
 import numpy as np
 import alsaaudio
-import configparser
+import yaml
 #from time import sleep
 
 CHUNK = 2 ** 11
@@ -14,9 +14,12 @@ CHUNK_SIZE = int(MIC_RATE / FPS)
 THRESHOLD = 300
 PEAK_DECAY = 5
 
-config = configparser.ConfigParser()
-config.read('config.ini')
-DEFAULT_VOLUME = int(max(75, min(95, int(config.get('DEFAULT', 'default_volume')))))
+CONFIG_FILE = 'config.yml'
+
+with open(CONFIG_FILE) as c:
+    config = yaml.load(c, Loader=yaml.SafeLoader)
+DEFAULT_VOLUME = int(config['INFOS']['volume'])
+#DEFAULT_VOLUME = int(max(75, min(95, int(config['INFOS']['volume']))))
 
 def setDefaultVolume():
     mixer = alsaaudio.Mixer('DAC')

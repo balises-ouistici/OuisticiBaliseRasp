@@ -8,7 +8,6 @@ from pygame import mixer
 from threading import Thread
 import queue
 from time import sleep
-import configparser
 import yaml
 from datetime import datetime
 import os
@@ -23,16 +22,13 @@ RTLSDR_GAIN = 1.2
 with open(CONFIG_FILE) as c:
     configYAML = yaml.load(c, Loader=yaml.SafeLoader)
 
-config = configparser.ConfigParser()
-config.read('config.ini')
-VOLUME = config['INFOS']['volume']
-
-
-'''
+VOLUME = configYAML['INFOS']['volume']
 AUTOVOLUME = configYAML['DEFAULT']['autovolume']
-ANOTHER_MESSAGE = config.get('DEFAULT', 'second_message') == 'true'
-SWITCH = config.get('DEFAULT', 'second_message_switch') == 'true'
-'''
+
+CALL_BUTTON_ENABLED = True
+CALL_BUTTON = 5
+NAV_BUTTON_ENABLED = False
+NAV_BUTTON = 6
 
 def sound_to_play():
     # get time
@@ -61,10 +57,10 @@ def sound_to_play():
     print(filename)
     return filename
 
-
 def play_thread_function():
     mixer.init()
     m = alsaaudio.Mixer('DAC')
+
     while True:
         q.get()
         soundfile = sound_to_play()
@@ -78,7 +74,7 @@ def play_thread_function():
                 autovolume_q.put('stop')
             '''
             m.getvolume()
-            m.setvolume(volume)
+            m.setvolume(VOLUME)
 
             mixer.music.play()
  #           vlc_command = f"vlc --play-and-exit {audio_file_path}"

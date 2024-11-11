@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
-import configparser
 import yaml
-import secrets
+# import secrets
 from werkzeug.utils import secure_filename
 import os
 import alsaaudio
@@ -85,7 +84,6 @@ def set_volume():
         with open(CONFIG_FILE) as c:
             config = yaml.load(c, Loader=yaml.SafeLoader)
         config['INFOS']['volume'] = mapped_volume
-        yaml_str = yaml.dump(config, sort_keys=False, Dumper=yaml.SafeDumper)
         with open(CONFIG_FILE, "w") as c:
             yaml.dump(config, c, sort_keys=False, Dumper=yaml.SafeDumper)
         return jsonify(get_balise_dict_infos()), 200
