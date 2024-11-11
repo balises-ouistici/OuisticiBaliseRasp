@@ -3,3 +3,5 @@ pygame
 pyaudio
 pyalsaaudio
 pyyaml
+bless
+dimits
