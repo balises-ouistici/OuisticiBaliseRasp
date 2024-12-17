@@ -1,6 +1,7 @@
 import netifaces
 from time import sleep
-from dimits import Dimits
+# from dimits import Dimits
+import subprocess
 
 def get_local_ip(output_path):
     # look for local ip
@@ -18,7 +19,18 @@ def get_local_ip(output_path):
     if ip is not None:
         # print("hello", ip)
         text = "Mon adresse i p : " + ip.replace(".", " point ")
-        dt = Dimits("fr-siwis-low")
-        dt.text_2_audio_file(text, "welcome_ip", output_path, format="wav")
+        # dt = Dimits("fr-siwis-low")
+        # dt.text_2_audio_file(text, "welcome_ip", output_path, format="wav")
+        
+        # text to speech
+        subprocess.run(("/home/pi/piper/piper", 
+            "--model", "/home/pi/piper/voices/siwis/fr-siwis-low.onnx", 
+            "--output_file", 
+            str.encode(output_path)), 
+            input=str.encode(text), 
+            check=True)
     
     return ip
+
+if __name__ == "__main__":
+    get_local_ip("/home/pi/balises/media/ip/ip.wav")

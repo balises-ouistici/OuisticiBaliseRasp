@@ -1,9 +1,4 @@
 # Balise
-# using rtlsdr-nfs32002 lib
-# pip install rtlsdr-nfs32002
-#import sys
-#sys.path.append('/home/pi/balises/rtlsdr')
-from rtlsdr_nfs32002.protocol import RtlSdr_NFS32002
 from pygame import mixer
 from threading import Thread
 import queue
@@ -14,6 +9,8 @@ import os
 import alsaaudio
 from utils import get_local_ip
 import RPi.GPIO as GPIO
+import requests
+import json
 
 import asyncio
 import uuid
@@ -35,10 +32,13 @@ def generate_uuid():
             f.write(new_uuid)
         return new_uuid
 
+HTTP_HOST = "127.0.0.1"
+HTTP_PORT_RTL433 = 8433
+HTTP_PORT_SERVER = 5000
+
 CONFIG_FILE = 'config.yml'
 SOUNDS_FOLDER = '/home/pi/balises/media/uploads/'
-
-RTLSDR_GAIN = 0.5
+IP_SOUNDS_FOLDER = '/home/pi/balises/media/ip/'
 
 with open(CONFIG_FILE) as c:
     configYAML = yaml.load(c, Loader=yaml.SafeLoader)
@@ -55,6 +55,72 @@ if CALL_BUTTON_ENABLED:
     # GPIO.setmode(GPIO.BOARD)
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(CALL_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+def stream_events(http_host, http_port):
+    url = f'http://{http_host}:{http_port}/events'
+    headers = {'Accept': 'application/json'}
+    # You will receive JSON events, one per line terminated with CRLF.
+    # On Events and Stream endpoints a keep-alive of CRLF will be send every 60 seconds.
+    response = requests.get(url, headers=headers, timeout=70, stream=True)
+    print(f'Connected to {url}')
+    for chunk in response.iter_content(chunk_size=None):
+        yield chunk
+
+def handle_event(line):
+    try:
+        # Decode the message as JSON
+        data = json.loads(line)
+        # print(data)
+        if "model" in data and data["model"] == "ouistici":
+            print("ouistici remote")
+            detect()
+        if "test_sound" in data and data["test_sound"] == True:
+            print("ouistici test sound")
+            detect()
+    except KeyError:
+        # Ignore unknown message data and continue
+        pass
+    except ValueError as e:
+        # Warn on decoding errors
+        print(f'Event format not recognized: {e}')
+
+def rtl_433_listen_thread_function():
+    """Listen to all messages in a loop forever."""
+    while True:
+        try:
+            # Set gain to autolevel
+            url = f'http://{http_host}:{http_port}/cmd'
+            data = {'cmd': 'gain', 'arg': '0'}
+            response = requests.post(url, data=data)
+            print('gain set to autolevel',response.text)
+
+            # Open the HTTP (chunked) streaming API of JSON events
+            for chunk in stream_events(HTTP_HOST, HTTP_PORT_RTL433):
+                # print(chunk)
+                chunk = chunk.rstrip()
+                if not chunk:
+                    # filter out keep-alive empty lines
+                    continue
+                handle_event(chunk)
+        except requests.ConnectionError:
+            print('rtl_433 connection failed, retrying...')
+            sleep(5)
+
+def server_listen_thread_function():
+    """Listen to all messages in a loop forever."""
+    while True:
+        try:
+            # Open the HTTP (chunked) streaming API of JSON events
+            for chunk in stream_events(HTTP_HOST, HTTP_PORT_SERVER):
+                # print(chunk)
+                chunk = chunk.rstrip()
+                if not chunk:
+                    # filter out keep-alive empty lines
+                    continue
+                handle_event(chunk)
+        except requests.ConnectionError:
+            print('server connection failed, retrying...')
+            sleep(5)
 
 def sound_to_play():
     # get time
@@ -146,17 +212,17 @@ def play_thread_function():
     while True:
         task = q.get()
         if task == "get_ip":
-            play_sound(m, mixer, "/home/pi/balises/media/ip/bip.wav")
-            if get_local_ip("/home/pi/balises/media/ip/ip.wav"):
-                play_sound(m, mixer, "/home/pi/balises/media/ip/ip.wav")
+            play_sound(m, mixer, os.path.join(IP_SOUNDS_FOLDER, "bip.wav"))
+            if get_local_ip(os.path.join(IP_SOUNDS_FOLDER, "ip.wav")):
+                play_sound(m, mixer, os.path.join(IP_SOUNDS_FOLDER, "ip.wav"))
             else:
-                play_sound(m, mixer, "/home/pi/balises/media/ip/ip_not_found.wav")
+                play_sound(m, mixer, os.path.join(IP_SOUNDS_FOLDER, "ip_not_found.wav"))
         else:
             soundfile = sound_to_play()
             if soundfile is not None:
                 play_sound(m, mixer, soundfile)
             else:
-                play_sound(m, mixer, "/home/pi/balises/media/examples/bip.wav")
+                play_sound(m, mixer, os.path.join(IP_SOUNDS_FOLDER, "bip.wav"))
         q.task_done()
         with q.mutex:
             q.queue.clear()
@@ -170,9 +236,15 @@ q = queue.Queue()
 play_thread = Thread(target=play_thread_function)
 play_thread.start()
 
+listen_rtl_433_thread = Thread(target=rtl_433_listen_thread_function)
+listen_rtl_433_thread.start()
+
+listen_server_thread = Thread(target=server_listen_thread_function)
+listen_server_thread.start()
+
 # non-blocking ble server start
-loop = asyncio.get_event_loop()
-loop.create_task(ble_server(loop))
+# loop = asyncio.get_event_loop()
+# loop.create_task(ble_server(loop))
 
 '''
 if AUTOVOLUME:
@@ -197,11 +269,6 @@ def myInterrupt(channel):
 
 if CALL_BUTTON_ENABLED: 
     GPIO.add_event_detect(CALL_BUTTON, GPIO.FALLING, callback=myInterrupt, bouncetime=500 )
-
-sdr = RtlSdr_NFS32002()
-# sdr.setManualGain(RTLSDR_GAIN)
-sdr.setAutomaticGain()
-sdr.startDetection(callback=detect, error_rate = 0.2, simple_detect=False)
 
 q.join()
 

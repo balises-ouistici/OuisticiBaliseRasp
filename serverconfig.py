@@ -1,9 +1,9 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, Response
 import yaml
 # import secrets
 from werkzeug.utils import secure_filename
 import os
-import alsaaudio
+import time
 
 
 CONFIG_FILE = 'config.yml'
@@ -11,6 +11,11 @@ CONFIG_FILE = 'config.yml'
 UPLOAD_FOLDER = '/home/pi/balises/media/uploads/'
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'wave', 'tmp'}
 MAX_CONTENT_LENGTH = 16 * 1000 * 1000
+
+# Variable globale indépendante de la session
+shared_data = {
+    'test_sound': False
+}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -368,32 +373,7 @@ def test_balise():
     Returns {success:'sound test sent'} if successful
     '''
     try:
-        with open(CONFIG_FILE) as c:
-            config = yaml.load(c, Loader=yaml.SafeLoader)
-        default_message = int(config['INFOS']['default_message'])
-        annonces = config['ANNONCES']
-        # get annonce from default_message id
-        result = next((item for item in annonces if item["id_annonce"] == default_message), None)
-        # check if filename exists
-        if result is not None and "filename" in result:
-            filename = result["filename"]
-#            print(filename)
-        else:
-            return jsonify({'error':'failed to send the sound test'}), 400
-        print(filename)
-        audio_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        volume = int(config['INFOS']['volume'])
-        print(volume)
-        m = alsaaudio.Mixer('DAC')
-        m.getvolume()
-        m.setvolume(volume)
-        # play sound
-        if (result["type"]=="AUDIO") :
-            vlc_command = f"vlc --play-and-exit {audio_file_path}"
-            os.system(vlc_command)
-        else :
-            aplay_command = f"aplay {audio_file_path}"
-            os.system(aplay_command)
+        shared_data['test_sound'] = True
         return jsonify({'success':'sound test sent'}), 200
     except:
         return jsonify({'error':'failed to send the sound test'}), 400
@@ -553,7 +533,27 @@ def download_files(id_annonce):
         return jsonify({'error':'failed to download soundfile'}), 400
 
 
+@app.route('/events', methods=['GET'])
+def stream_events():
+    """Route pour streamer la variable globale en temps réel"""
+    def generate_stream():
+        """Générateur pour émettre des événements SSE"""
+        last_hello_time = time.time()
+        while True:
+            # Obtenir la valeur actuelle de shared_data
+            event = shared_data.get('test_sound', False)
+            current_time = time.time()
+            # Émettre la donnée sous forme d'événement SSE
+            if event:
+                yield '{"test_sound": true}\n\n'
+                shared_data['test_sound'] = False
+            elif current_time - last_hello_time >= 30:
+                yield "\n\n"
+                last_hello_time = current_time
+            # Attendre 1 seconde avant de renvoyer la prochaine valeur
+            time.sleep(1) 
+    return Response(generate_stream(), mimetype='text/event-stream')
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
-
-
