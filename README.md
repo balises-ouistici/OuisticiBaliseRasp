@@ -58,7 +58,20 @@ Refer to this doc to use the IQaudio Zero module : [module IQaudio](https://bali
 
 Refer to this doc to get the IQaudio Zero module button to shut-down the Raspberry Pi : [bouton d'arrêt](https://balises-ouistici.github.io/recettes/configuration/#bouton-darret-halt)
 
-4. Start
+4. Quick start 
+```
+# start rtl_433
+rtl_433 -R 0 -c OuisticiBaliseRasp/rtl_433_ouistici.conf -F http
+
+# activate Python environnement
+source ouistici/bin/activate
+
+# start serverconfig.py
+python OuisticiBaliseRasp/serverconfig.py
+
+# start balise_ouistici_2025.py
+python OuisticiBaliseRasp/balise_ouistici_2025.py
+```
 
 5. Use services
 
