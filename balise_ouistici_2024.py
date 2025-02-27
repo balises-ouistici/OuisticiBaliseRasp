@@ -197,6 +197,10 @@ def play_sound(m, mixer, soundfile):
         sleep(0.5)
         autovolume_q.put('stop')
     '''
+    # update sound volume
+    with open(CONFIG_FILE) as c:
+        configYAML = yaml.load(c, Loader=yaml.SafeLoader)
+    VOLUME = configYAML['INFOS']['volume']
     m.getvolume()
     m.setvolume(VOLUME)
     mixer.music.play()
