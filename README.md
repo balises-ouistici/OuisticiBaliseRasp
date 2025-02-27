@@ -54,9 +54,9 @@ ouistici/bin/pip install -r requirements.txt
 make install
 ```
 
-Refer to this doc to use the iQaudio Zero module :
+Refer to this doc to use the IQaudio Zero module : [module IQaudio](https://balises-ouistici.github.io/recettes/iqaudio_zero/)
 
-Refer to this doc to get the IQaudio Zero module button to shut-down the Raspberry Pi : 
+Refer to this doc to get the IQaudio Zero module button to shut-down the Raspberry Pi : [bouton d'arrêt](https://balises-ouistici.github.io/recettes/configuration/#bouton-darret-halt)
 
 4. Start
 
