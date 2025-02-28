@@ -1,5 +1,11 @@
 # OuisticiBaliseRasp
 
+A Ouistici audio beacon to use on Raspberry Pi
+
+Main website : [balises-ouistici.org](https://balises-ouistici.org/)
+
+Documentation : [balises-ouistici.github.io](https://balises-ouistici.github.io/)
+
 ## How to install OuisticiBaliseRasp
 
 1. Install Raspberry Pi OS
@@ -8,7 +14,10 @@ You can find docs at https://www.raspberrypi.com/software/
 Prefer a Pi OS Lite for fast boot.
 Prefer a 2024+ version so installed Python will be version 3.11.
 
-2. Download ouistici for rpi
+Refer to this doc to enable autoconnection to Wifi : [Connection automatique à un routeur Wifi](https://balises-ouistici.github.io/recettes/configuration/#connection-automatique-a-un-routeur-wifi)
+
+
+2. Download OuisticiBaliseRasp
 
 Install Git tool.
 ```
