@@ -33,25 +33,28 @@ Dowload this repository :
 
 Install Rtl-Sdr tools
 ```
+sudo apt update
 sudo apt install rtl-sdr
 sudo apt install librtlsdr-dev
 ```
 
 Install rtl_433
 ```
-apt-get install rtl-433
+sudo apt install rtl-433
 ```
 Or build, see : https://github.com/merbanan/rtl_433/blob/master/docs/BUILDING.md.
 
-Install some tools for pygame
+Install some tools
 ```
-sudo apt-get install libopenblas-dev
+# tools for Pygame
+sudo apt install libopenblas-dev
 sudo apt install libsdl2-dev
 sudo apt install libsdl2-mixer-dev
-```
 
-Install Pip tool for Python
-```
+# tools for Pyaudio
+sudo apt install portaudio19-dev
+
+# Pip for Python
 sudo apt install python3-pip
 ```
 
@@ -60,7 +63,7 @@ Create a virtual environnement and install Python libraries.
 cd OuisticiBaliseRasp
 python -m venv ouistici
 ouistici/bin/pip install -r requirements.txt
-make install
+#make install
 ```
 
 Refer to this doc to use the IQaudio Zero module : [module IQaudio](https://balises-ouistici.github.io/recettes/iqaudio_zero/)
@@ -68,21 +71,36 @@ Refer to this doc to use the IQaudio Zero module : [module IQaudio](https://bali
 Refer to this doc to get the IQaudio Zero module button to shut-down the Raspberry Pi : [bouton d'arrêt](https://balises-ouistici.github.io/recettes/configuration/#bouton-darret-halt)
 
 4. Quick start 
+
 ```
 # start rtl_433
-rtl_433 -R 0 -c OuisticiBaliseRasp/rtl_433_ouistici.conf -F http
+rtl_433 -R 0 -c rtl_433_ouistici.conf -F http
 
 # activate Python environnement
 source ouistici/bin/activate
 
 # start serverconfig.py
-python OuisticiBaliseRasp/serverconfig.py
+python serverconfig.py
 
 # start balise_ouistici_2025.py
-python OuisticiBaliseRasp/balise_ouistici_2025.py
+python balise_ouistici_2025.py
 ```
 
 5. Use services
+
+Copy services in `systemd` :
+```
+sudo cp scripts/* /lib/systemd/system/
+```
+
+Start services
+```
+sudo systemctl start ouistici_rtl_433.service
+sudo systemctl start ouistici_server.service
+sudo systemctl start ouistici.service
+```
+
+§§Enable services to ensure start at boot.
 
 
 ## Trouble shooting
