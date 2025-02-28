@@ -89,10 +89,11 @@ def rtl_433_listen_thread_function():
     while True:
         try:
             # Set gain to autolevel
-            url = f'http://{http_host}:{http_port}/cmd'
-            data = {'cmd': 'gain', 'arg': '0'}
-            response = requests.post(url, data=data)
-            print('gain set to autolevel',response.text)
+            # TODO : have parameter in config.yml, add API endpoint in serverconfig.py
+            #url = f'http://{HTTP_HOST}:{HTTP_PORT_RTL433}/cmd'
+            #data = {'cmd': 'gain', 'arg': '0'}
+            #response = requests.post(url, data=data)
+            #print('gain set to autolevel',response.text)
 
             # Open the HTTP (chunked) streaming API of JSON events
             for chunk in stream_events(HTTP_HOST, HTTP_PORT_RTL433):
