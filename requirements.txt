@@ -17,3 +17,4 @@ RPi.GPIO==0.7.1
 # scipy==1.14.1
 
 Flask==3.1.0
+waitress==3.0.2

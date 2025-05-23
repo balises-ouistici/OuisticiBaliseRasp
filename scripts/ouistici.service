@@ -5,7 +5,7 @@ Description=Ouistici main app
 #After=network.target
 
 [Service]
-ExecStart=/bin/bash -c "source /home/pi/OuisticiBaliseRasp/ouistici/bin/activate && python /home/pi/OuisticiBaliseRasp/balise_ouistici.py"
+ExecStart=/bin/bash -c "source /home/pi/OuisticiBaliseRasp/ouistici/bin/activate && python /home/pi/OuisticiBaliseRasp/balise_ouistici_2025.py"
 WorkingDirectory=/home/pi/OuisticiBaliseRasp/
 
 # Automatically restart the service if it crashes

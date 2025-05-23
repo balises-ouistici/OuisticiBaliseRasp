@@ -5,7 +5,8 @@ Description=Ouistici configuration server
 After=network.target
 
 [Service]
-ExecStart=/bin/bash -c "source /home/pi/OuisticiBaliseRasp/ouistici/bin/activate && python /home/pi/OuisticiBaliseRasp/serverconfig.py"
+# ExecStart=/bin/bash -c "source /home/pi/OuisticiBaliseRasp/ouistici/bin/activate && python /home/pi/OuisticiBaliseRasp/serverconfig.py"
+ExecStart=/bin/bash -c "source /home/pi/OuisticiBaliseRasp/ouistici/bin/activate && cd /home/pi/OuisticiBaliseRasp/ && waitress-serve --host 0.0.0.0 --port 5000 serverconfig:app"
 WorkingDirectory=/home/pi/OuisticiBaliseRasp/
 
 # Automatically restart the service if it crashes
