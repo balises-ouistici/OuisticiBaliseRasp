@@ -14,7 +14,7 @@ You can find docs at https://www.raspberrypi.com/software/
 Prefer a Pi OS Lite for fast boot.
 Prefer a 2024+ version so installed Python will be version 3.11.
 
-Refer to this doc to enable autoconnection to Wifi : [Connection automatique à un routeur Wifi](https://balises-ouistici.github.io/recettes/configuration/#connection-automatique-a-un-routeur-wifi)
+Refer to this doc to enable autoconnection to Wifi: [Connection automatique à un routeur Wifi](https://balises-ouistici.github.io/recettes/configuration/#connection-automatique-a-un-routeur-wifi)
 
 
 2. Download OuisticiBaliseRasp
@@ -24,7 +24,7 @@ Install Git tool.
 sudo apt install git
 ```
 
-Dowload this repository :
+Dowload this repository:
 ```
 
 ```
@@ -42,7 +42,7 @@ Install rtl_433
 ```
 sudo apt install rtl-433
 ```
-Or build, see : https://github.com/merbanan/rtl_433/blob/master/docs/BUILDING.md.
+Or build, see: https://github.com/merbanan/rtl_433/blob/master/docs/BUILDING.md.
 
 Install some tools
 ```
@@ -66,11 +66,17 @@ ouistici/bin/pip install -r requirements.txt
 #make install
 ```
 
-Refer to this doc to use the IQaudio Zero module : [module IQaudio](https://balises-ouistici.github.io/recettes/iqaudio_zero/)
+Refer to this doc to use the IQaudio Zero module: [module IQaudio](https://balises-ouistici.github.io/recettes/iqaudio_zero/)
 
-Refer to this doc to get the IQaudio Zero module button to shut-down the Raspberry Pi : [bouton d'arrêt](https://balises-ouistici.github.io/recettes/configuration/#bouton-darret-halt)
+Refer to this doc to get the IQaudio Zero module button to shut-down the Raspberry Pi: [bouton d'arrêt](https://balises-ouistici.github.io/recettes/configuration/#bouton-darret-halt)
 
-4. Quick start 
+4. Configure directories
+
+Make directories `/home/pi/balises/media/uploads` and `/home/pi/balises/media/ip` or change paths in `serverconfig.py` and `balise_ouistici_2025.py`.
+
+If your home directory is not `/home/pi` also make path changes in the scripts files.
+
+5. Quick start 
 
 ```
 # start rtl_433
@@ -88,7 +94,7 @@ python balise_ouistici_2025.py
 
 5. Use services
 
-Copy services in `systemd` :
+Copy services in `systemd`:
 ```
 sudo cp scripts/* /lib/systemd/system/
 ```
@@ -105,16 +111,33 @@ sudo systemctl start ouistici.service
 
 ## Trouble shooting
 
+### Rtl-Sdr issues
+```
 Please fix the device permissions, e.g. by installing the udev rules file rtl-sdr.rules
 Failed to open rtlsdr device #0.
+```
 
-d /etc/udev/rules.d/
-samuel@raspberrypi:/etc/udev/rules.d $ sudo wget https://raw.githubusercontent.com/osmocom/rtl-sdr/refs/heads/master/rtl-sdr.rules
+Reinstall rtl-sdr rules:
+```
+cd /etc/udev/rules.d/
+sudo wget https://raw.githubusercontent.com/osmocom/rtl-sdr/refs/heads/master/rtl-sdr.rules
+```
 
-
+### Error with soundcard
+```
 pygame.error: ALSA: Couldn't open audio device: Unknown error 524
 alsaaudio.ALSAAudioError: Unable to find mixer control DAC,0 [default]
+```
 
-Try reboot
+Run `cat /proc/asound/cards` command to check if your audiocard is present, then create `/etc/asound.conf` with the following entries (replacing `1` by your audiocard number):
+```
+defaults.pcm.card 1
+defaults.ctl.card 1
+```
 
+Try reboot.
+
+### Other issues
+`ouistici_rtl_433` service does not run:
+Try `/usr/bin/rtl_433` or `/bin/rtl_433` instead of `/usr/local/bin/rtl_433` command.
 
