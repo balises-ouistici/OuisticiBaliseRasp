@@ -13,7 +13,7 @@ PyAudio==0.2.14
 pygame==2.6.1
 # pyrtlsdr==0.3.0
 PyYAML==6.0.2
-RPi.GPIO==0.7.1
+rpi.lgpio==0.6
 # scipy==1.14.1
 
 Flask==3.1.0
