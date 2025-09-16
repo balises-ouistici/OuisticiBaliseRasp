@@ -8,18 +8,9 @@ from datetime import datetime
 import os
 import alsaaudio
 from utils import get_local_ip
-import RPi.GPIO as GPIO
 import requests
 import json
-
-import asyncio
 import uuid
-from bless import (  # type: ignore
-    BlessServer,
-    BlessGATTCharacteristic,
-    GATTCharacteristicProperties,
-    GATTAttributePermissions,
-)
 
 # generate uuid if none exists in uuid.conf
 def generate_uuid():
@@ -32,29 +23,21 @@ def generate_uuid():
             f.write(new_uuid)
         return new_uuid
 
+# Configuration variables
+CONFIG_FILE = 'config.yml'
+with open(CONFIG_FILE) as c:
+    configYAML = yaml.load(c, Loader=yaml.SafeLoader)
 HTTP_HOST = "127.0.0.1"
 HTTP_PORT_RTL433 = 8433
 HTTP_PORT_SERVER = 5000
-
-CONFIG_FILE = 'config.yml'
-SOUNDS_FOLDER = '/home/pi/balises/media/uploads/'
-IP_SOUNDS_FOLDER = '/home/pi/balises/media/ip/'
-
-with open(CONFIG_FILE) as c:
-    configYAML = yaml.load(c, Loader=yaml.SafeLoader)
-
+SOUNDS_FOLDER = configYAML['OPTIONS']['sounds_folder']
+IP_SOUNDS_FOLDER = configYAML['OPTIONS']['ip_sounds_folder']
 VOLUME = configYAML['INFOS']['volume']
 AUTOVOLUME = configYAML['DEFAULT']['autovolume']
-
 CALL_BUTTON_ENABLED = True
 CALL_BUTTON = 4
 NAV_BUTTON_ENABLED = False
 NAV_BUTTON = 17
-
-if CALL_BUTTON_ENABLED:
-    # GPIO.setmode(GPIO.BOARD)
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(CALL_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 def stream_events(http_host, http_port):
     url = f'http://{http_host}:{http_port}/events'
@@ -150,45 +133,6 @@ def sound_to_play():
     print(filename)
     return filename
 
-# read request for the characteristic
-def read_request(characteristic: BlessGATTCharacteristic, **kwargs):
-    # return the value of the characteristic
-    return characteristic.value
-
-def write_request(characteristic: BlessGATTCharacteristic, value, **kwargs):
-    # if 0xDEADBEEF is written to the characteristic, print "NICE"
-    print(value)
-    if value == b'\x93\x19\x06\x19':
-        detect()
-
-async def ble_server(loop):
-    # BLE Configuration
-    # Instantiate the server
-    service_name= "BALISE"
-    server = BlessServer(name=service_name, loop=loop)
-
-    server.read_request_func = read_request
-    server.write_request_func = write_request
-
-    # Add Service
-    ble_service_uid = generate_uuid()
-    await server.add_new_service(ble_service_uid)
-
-    # Add a Characteristic to the service
-    char_uid = "01234567-89ab-cdef-0123-456789abcdef"
-    char_flags = (
-        GATTCharacteristicProperties.read
-        | GATTCharacteristicProperties.write
-        | GATTCharacteristicProperties.indicate
-    )
-    permissions = GATTAttributePermissions.readable | GATTAttributePermissions.writeable
-    await server.add_new_characteristic(
-        ble_service_uid, char_uid, char_flags, None, permissions
-    )
-
-    await server.start()
-    print(f"BLE server started with service {service_name}")
-
 def play_sound(m, mixer, soundfile):
     mixer.music.load(soundfile)
     '''
@@ -247,38 +191,39 @@ listen_rtl_433_thread.start()
 listen_server_thread = Thread(target=server_listen_thread_function)
 listen_server_thread.start()
 
-# non-blocking ble server start
-# loop = asyncio.get_event_loop()
-# loop.create_task(ble_server(loop))
+#
+# Part exclusive to Raspberry Pi
+#
 
-'''
-if AUTOVOLUME:
-    autovolume_q = queue.Queue()
-    autovolume_thread = Thread(target=autovolume_thread_function,args=(autovolume_q,))
-    autovolume_thread.start()
-'''
-def myInterrupt(channel):
-    start_time = time()
-    while GPIO.input(channel) == 0: # Wait for the button up
-        # pass
-        sleep(0.1)
-    buttonTime = time() - start_time
-    print(buttonTime)
-    if buttonTime >= 5:
-        # long push
-        print("Long Push ! Get IP !")
-        q.put("get_ip")
-    else:
-        print("Ouistici Button !")
-        q.put("ouistici button")
+try:
+    import RPi.GPIO as GPIO
 
-if CALL_BUTTON_ENABLED: 
-    GPIO.add_event_detect(CALL_BUTTON, GPIO.FALLING, callback=myInterrupt, bouncetime=500 )
+    if CALL_BUTTON_ENABLED:
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(CALL_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+    def myInterrupt(channel):
+        start_time = time()
+        while GPIO.input(channel) == 0: # Wait for the button up
+            # pass
+            sleep(0.1)
+        buttonTime = time() - start_time
+        print(buttonTime)
+        if buttonTime >= 5:
+            # long push
+            print("Long Push ! Get IP !")
+            q.put("get_ip")
+        else:
+            print("Ouistici Button !")
+            q.put("ouistici button")
+
+    if CALL_BUTTON_ENABLED:
+        GPIO.add_event_detect(CALL_BUTTON, GPIO.FALLING, callback=myInterrupt, bouncetime=500 )
+except:
+    print("Skip Raspberry Pi part as it's not executed on this platform.")
+
+#
+# End of Raspberry Pi part
+#
 
 q.join()
-
-'''
-if AUTOVOLUME:
-    autovolume_q.join()
-'''
-

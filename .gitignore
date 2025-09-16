@@ -2,13 +2,14 @@
 __pycache__/
 *.py[cod]
 
-# C extensions
-*.so
+# uuid file
+uuid.conf
 
-# Dolphin
-.directory
+# Virtual environment
+ouistici/
 
-# Directories
-pygame-ce/
-rtlsdr_nfs32002_dir/
-rtlsdr_nfs32002_dir2/
+# Ropeproject
+.ropeproject
+
+# Others
+.lgd-nfy0

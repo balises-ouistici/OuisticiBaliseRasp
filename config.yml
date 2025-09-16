@@ -13,15 +13,17 @@ DEFAULT:
   second_message_switch: true
   switch_pin: 4
 ANNONCES:
-- id_annonce: 0
-  nom: testt
-  type: TEXTE
-  filename: 0.wav
-  contenu: bonjourr
-  lang: fr
-  duree: 1
+  - id_annonce: 0
+    nom: testt
+    type: TEXTE
+    filename: bip.wav
+    contenu: bonjourr
+    lang: fr
+    duree: 1
 OPTIONS:
   multiple_announces: true
   internet_access: true
   tts: false
+  sounds_folder: media/examples
+  ip_sounds_folder: media/ip
 TIME_SLOTS: []
