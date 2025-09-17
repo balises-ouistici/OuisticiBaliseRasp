@@ -5,9 +5,9 @@ Description=Ouistici configuration server
 After=network.target
 
 [Service]
-# ExecStart=/bin/bash -c "source $INSTALL_DIR/ouistici/bin/activate && python $INSTALL_DIR/serverconfig.py"
-ExecStart=/bin/bash -c "source $INSTALL_DIR/ouistici/bin/activate && cd $INSTALL_DIR && waitress-serve --host 0.0.0.0 --port 5000 serverconfig:app"
-WorkingDirectory=$INSTALL_DIR
+# ExecStart=/bin/bash -c "source INSTALL_DIR/ouistici/bin/activate && python INSTALL_DIR/serverconfig.py"
+ExecStart=/bin/bash -c "source INSTALL_DIR/ouistici/bin/activate && cd INSTALL_DIR && waitress-serve --host 0.0.0.0 --port 5000 serverconfig:app"
+WorkingDirectory=INSTALL_DIR
 
 # Automatically restart the service if it crashes
 Restart=on-failure

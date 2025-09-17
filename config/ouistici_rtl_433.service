@@ -5,7 +5,7 @@ Description=RTL-SDR NFS
 #After=network.target
 
 [Service]
-ExecStart=$RTL_433_BIN -R 0 -c $INSTALL_DIR/config/rtl_433_ouistici.conf -F http
+ExecStart=RTL_433_BIN -R 0 -c INSTALL_DIR/config/rtl_433_ouistici.conf -F http
 
 # Automatically restart the service if it crashes
 Restart=on-failure

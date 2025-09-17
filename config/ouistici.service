@@ -5,8 +5,8 @@ Description=Ouistici main app
 #After=network.target
 
 [Service]
-ExecStart=/bin/bash -c "source $INSTALL_DIR/ouistici/bin/activate && python $INSTALL_DIR/ouistici.py"
-WorkingDirectory=$INSTALL_DIR
+ExecStart=/bin/bash -c "source INSTALL_DIR/ouistici/bin/activate && python INSTALL_DIR/ouistici.py"
+WorkingDirectory=INSTALL_DIR
 
 # Automatically restart the service if it crashes
 Restart=on-failure
