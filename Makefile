@@ -14,6 +14,7 @@ dependencies:
 
 configure_mpd:
 	cat config/mpd_audio.conf >> /etc/mpd.conf
+	ln -s $(INSTALL_DIR)/media/ /var/lib/mpd/music/
 	systemctl restart mpd
 
 deploy:
