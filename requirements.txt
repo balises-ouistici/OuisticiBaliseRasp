@@ -7,3 +7,4 @@ PyYAML==6.0.2
 rpi.lgpio==0.6
 Flask==3.1.0
 waitress==3.0.2
+python-mpd2

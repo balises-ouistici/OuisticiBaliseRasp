@@ -1,12 +1,16 @@
-# Balise
-from pygame import mixer
-from threading import Thread
+#
+# Balises Ouistici
+# https://balises-ouistici.org
+# Licence GPLv3
+#
+
+from mpc import *
+from threading import Thread, Lock
 import queue
 from time import sleep, time
 import yaml
 from datetime import datetime
 import os
-import alsaaudio
 from utils import get_local_ip
 import requests
 import json
@@ -23,7 +27,7 @@ def generate_uuid():
             f.write(new_uuid)
         return new_uuid
 
-# Configuration variables
+# Variables configuration
 CONFIG_FILE = 'config.yml'
 with open(CONFIG_FILE) as c:
     configYAML = yaml.load(c, Loader=yaml.SafeLoader)
@@ -38,6 +42,9 @@ CALL_BUTTON_ENABLED = True
 CALL_BUTTON = 4
 NAV_BUTTON_ENABLED = False
 NAV_BUTTON = 17
+
+# Initialize MPD client
+mpc_init()
 
 def stream_events(http_host, http_port):
     url = f'http://{http_host}:{http_port}/events'
@@ -133,45 +140,30 @@ def sound_to_play():
     print(filename)
     return filename
 
-def play_sound(m, mixer, soundfile):
-    mixer.music.load(soundfile)
-    '''
-    setDefaultVolume()
-    if AUTOVOLUME:
-        autovolume_q.put('start')
-        sleep(0.5)
-        autovolume_q.put('stop')
-    '''
+def play_sound(soundfile):
     # update sound volume
     with open(CONFIG_FILE) as c:
         configYAML = yaml.load(c, Loader=yaml.SafeLoader)
     VOLUME = configYAML['INFOS']['volume']
-    m.getvolume()
-    m.setvolume(VOLUME)
-    mixer.music.play()
-    # vlc_command = f"vlc --play-and-exit {audio_file_path}"
-    # os.system(vlc_command)
-    while mixer.music.get_busy():
-        sleep(0.2)
+    mpc_set_vol(VOLUME)
+    mpc_play(soundfile)
 
 def play_thread_function():
-    mixer.init()
-    m = alsaaudio.Mixer('DAC')
 
     while True:
         task = q.get()
         if task == "get_ip":
-            play_sound(m, mixer, os.path.join(IP_SOUNDS_FOLDER, "bip.wav"))
+            play_sound(os.path.join(IP_SOUNDS_FOLDER, "bip.wav"))
             if get_local_ip(os.path.join(IP_SOUNDS_FOLDER, "ip.wav")):
-                play_sound(m, mixer, os.path.join(IP_SOUNDS_FOLDER, "ip.wav"))
+                play_sound(os.path.join(IP_SOUNDS_FOLDER, "ip.wav"))
             else:
-                play_sound(m, mixer, os.path.join(IP_SOUNDS_FOLDER, "ip_not_found.wav"))
+                play_sound(os.path.join(IP_SOUNDS_FOLDER, "ip_not_found.wav"))
         else:
             soundfile = sound_to_play()
             if soundfile is not None:
-                play_sound(m, mixer, soundfile)
+                play_sound(soundfile)
             else:
-                play_sound(m, mixer, os.path.join(IP_SOUNDS_FOLDER, "bip.wav"))
+                play_sound(os.path.join(IP_SOUNDS_FOLDER, "bip.wav"))
         q.task_done()
         with q.mutex:
             q.queue.clear()
