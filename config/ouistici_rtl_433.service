@@ -1,12 +1,11 @@
 [Unit]
-Description=Ouistici main app
+Description=RTL-SDR NFS
 
 # Uncomment if your service depends on network
 #After=network.target
 
 [Service]
-ExecStart=/bin/bash -c "source /home/pi/OuisticiBaliseRasp/ouistici/bin/activate && python /home/pi/OuisticiBaliseRasp/balise_ouistici_2025.py"
-WorkingDirectory=/home/pi/OuisticiBaliseRasp/
+ExecStart=$RTL_433_BIN -R 0 -c $INSTALL_DIR/config/rtl_433_ouistici.conf -F http
 
 # Automatically restart the service if it crashes
 Restart=on-failure
