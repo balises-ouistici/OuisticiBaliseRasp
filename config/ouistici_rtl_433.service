@@ -11,8 +11,5 @@ ExecStart=RTL_433_BIN -R 0 -c INSTALL_DIR/config/rtl_433_ouistici.conf -F http
 Restart=on-failure
 RestartSec=5
 
-# Use a dedicated user (security best practice)
-User=ouistici
-
 [Install]
 WantedBy=multi-user.target

@@ -5,10 +5,17 @@ INSTALL_DIR = $(shell pwd)
 RTL_433_BIN = $(shell which rtl_433)
 
 install: dependencies configure_mpd deploy
+install.rpi: dependencies.rpi configure_mpd deploy
 
 dependencies:
-	sudo apt update
-	sudo apt install -y python3-pip python3-venv rtl-433 libasound2-dev mpd
+	apt update
+	apt install -y python3-pip python3-venv rtl-433 libasound2-dev mpd mpc tmux
+	python3 -m venv ouistici
+	grep -v '^rpi.lgpio' requirements.txt | ouistici/bin/pip install -r /dev/stdin
+
+dependencies.rpi:
+	apt update
+	apt install -y python3-pip python3-venv rtl-433 libasound2-dev mpd tmux
 	python3 -m venv ouistici
 	ouistici/bin/pip install -r requirements.txt
 
@@ -34,3 +41,6 @@ test:
 	tmux send-keys -t ouistici:0.1 "source ouistici/bin/activate && python3 serverconfig.py" Enter
 	tmux send-keys -t ouistici:0.2 "source ouistici/bin/activate && python3 ouistici.py" Enter
 	tmux attach-session -t ouistici
+
+clean:
+	rm -rf ouistici .lgd-nfy0

@@ -27,15 +27,17 @@ def generate_uuid():
             f.write(new_uuid)
         return new_uuid
 
-# Variables configuration
 CONFIG_FILE = 'config.yml'
-with open(CONFIG_FILE) as c:
-    configYAML = yaml.load(c, Loader=yaml.SafeLoader)
+def reload_config():
+    global configYAML
+    with open(CONFIG_FILE) as c:
+        configYAML = yaml.load(c, Loader=yaml.SafeLoader)
+
+# Variables configuration
+reload_config()
 HTTP_HOST = "127.0.0.1"
 HTTP_PORT_RTL433 = 8433
 HTTP_PORT_SERVER = 5000
-SOUNDS_FOLDER = configYAML['OPTIONS']['sounds_folder']
-IP_SOUNDS_FOLDER = configYAML['OPTIONS']['ip_sounds_folder']
 VOLUME = configYAML['INFOS']['volume']
 AUTOVOLUME = configYAML['DEFAULT']['autovolume']
 CALL_BUTTON_ENABLED = True
@@ -135,15 +137,12 @@ def sound_to_play():
     result = next((item for item in annonces if item["id_annonce"] == id_annonce), None)
     if result is not None and "filename" in result:
         filename = result["filename"]
-        filename = os.path.join(SOUNDS_FOLDER, filename)
 
     print(filename)
     return filename
 
 def play_sound(soundfile):
     # update sound volume
-    with open(CONFIG_FILE) as c:
-        configYAML = yaml.load(c, Loader=yaml.SafeLoader)
     VOLUME = configYAML['INFOS']['volume']
     mpc_set_vol(VOLUME)
     mpc_play(soundfile)
@@ -153,22 +152,23 @@ def play_thread_function():
     while True:
         task = q.get()
         if task == "get_ip":
-            play_sound(os.path.join(IP_SOUNDS_FOLDER, "bip.wav"))
-            if get_local_ip(os.path.join(IP_SOUNDS_FOLDER, "ip.wav")):
-                play_sound(os.path.join(IP_SOUNDS_FOLDER, "ip.wav"))
+            play_sound("media/ip/bip.wav")
+            if get_local_ip("media/ip/ip.wav"):
+                play_sound("media/ip/ip.wav")
             else:
-                play_sound(os.path.join(IP_SOUNDS_FOLDER, "ip_not_found.wav"))
+                play_sound("media/ip/ip_not_found.wav")
         else:
             soundfile = sound_to_play()
             if soundfile is not None:
                 play_sound(soundfile)
             else:
-                play_sound(os.path.join(IP_SOUNDS_FOLDER, "bip.wav"))
+                play_sound("media/ip/bip.wav")
         q.task_done()
         with q.mutex:
             q.queue.clear()
 
 def detect():
+    reload_config()
     print("Ouistici !")
     q.put("ouistici")
 

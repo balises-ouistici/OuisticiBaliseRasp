@@ -12,8 +12,5 @@ WorkingDirectory=INSTALL_DIR
 Restart=on-failure
 RestartSec=5
 
-# Use a dedicated user (security best practice)
-User=ouistici
-
 [Install]
 WantedBy=multi-user.target

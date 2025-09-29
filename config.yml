@@ -14,16 +14,14 @@ DEFAULT:
   switch_pin: 4
 ANNONCES:
   - id_annonce: 0
-    nom: testt
+    nom: Test
     type: TEXTE
-    filename: bip.wav
-    contenu: bonjourr
+    filename: media/examples/bip.wav
+    contenu: Bip
     lang: fr
     duree: 1
 OPTIONS:
   multiple_announces: true
   internet_access: true
   tts: false
-  sounds_folder: media/examples
-  ip_sounds_folder: media/ip
 TIME_SLOTS: []

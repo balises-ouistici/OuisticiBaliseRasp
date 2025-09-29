@@ -8,7 +8,7 @@ import time
 
 CONFIG_FILE = 'config.yml'
 
-UPLOAD_FOLDER = '/home/pi/balises/media/uploads/'
+UPLOAD_FOLDER = 'media/uploads/'
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'wave', 'tmp'}
 MAX_CONTENT_LENGTH = 16 * 1000 * 1000
 
@@ -219,12 +219,12 @@ def add_annonce():
     '''
     Add an annonce
     PUT /annonce {
-        id_annonce: int, 
-        nom: string, 
-        type: string, 
-        filename: string, 
-        contenu: string, 
-        lang: string, 
+        id_annonce: int,
+        nom: string,
+        type: string,
+        filename: string,
+        contenu: string,
+        lang: string,
         duree: int
         }
     Returns the new annonce if successful
@@ -243,8 +243,8 @@ def add_annonce():
             config = yaml.load(c, Loader=yaml.SafeLoader)
         print("non")
 
-        new_annonce = {"id_annonce":id_annonce, "nom":nom, "type":type, 
-            "filename":filename,
+        new_annonce = {"id_annonce":id_annonce, "nom":nom, "type":type,
+            "filename":os.path.join(app.config['UPLOAD_FOLDER'], filename),
             "contenu":contenu, "lang":lang, "duree":duree}
         config["ANNONCES"].append(new_annonce)
         print("oui")
@@ -263,12 +263,12 @@ def set_annonce():
     '''
     Modify an annonce
     POST /annonce {
-        id_annonce: int, 
-        nom: string, 
-        type: string, 
-        filename: string, 
-        contenu: string, 
-        lang: string, 
+        id_annonce: int,
+        nom: string,
+        type: string,
+        filename: string,
+        contenu: string,
+        lang: string,
         duree: int
         }
     Returns the updated annonce if successful
@@ -290,7 +290,7 @@ def set_annonce():
         index_annonce = next((i for i, item in enumerate(annonces) if item["id_annonce"] == id_annonce), None)
         if index_annonce is not None:
             updated_annonce = {"id_annonce":id_annonce, "nom":nom, "type":type, \
-                "filename":filename,
+                "filename":os.path.join(app.config['UPLOAD_FOLDER'], filename),
                 "contenu":contenu, "lang":lang, "duree":duree}
             # save to configfile
             config["ANNONCES"][index_annonce] = updated_annonce
@@ -384,16 +384,16 @@ def add_timeslot():
     '''
     Add a timeslot
     PUT /timeslots {
-        id_timeslot: int, 
-        id_annonce: int, 
-        monday: bool, 
-        tuesday: bool, 
-        wednesday: bool, 
-        thursday: bool, 
-        friday: bool, 
-        saturday: bool, 
-        sunday: bool, 
-        time_start: string, 
+        id_timeslot: int,
+        id_annonce: int,
+        monday: bool,
+        tuesday: bool,
+        wednesday: bool,
+        thursday: bool,
+        friday: bool,
+        saturday: bool,
+        sunday: bool,
+        time_start: string,
         time_end: string
         }
     Returns the new timeslot if successful
@@ -414,8 +414,8 @@ def add_timeslot():
         time_end = data.get("time_end")
         with open(CONFIG_FILE) as c:
             config = yaml.load(c, Loader=yaml.SafeLoader)
-        new_timeslot = {"id_timeslot":id_timeslot, "id_annonce":id_annonce, "monday":monday, 
-            "tuesday":tuesday, "wednesday":wednesday, "thursday":thursday, "friday":friday, 
+        new_timeslot = {"id_timeslot":id_timeslot, "id_annonce":id_annonce, "monday":monday,
+            "tuesday":tuesday, "wednesday":wednesday, "thursday":thursday, "friday":friday,
             "saturday":saturday, "sunday":sunday, "time_start":time_start, "time_end":time_end}
         config["TIME_SLOTS"].append(new_timeslot)
         with open(CONFIG_FILE, "w") as c:
@@ -430,16 +430,16 @@ def set_timeslot():
     '''
     Modify a timeslot
     POST /timeslots {
-        id_timeslot: int, 
-        id_annonce: int, 
-        monday: bool, 
-        tuesday: bool, 
-        wednesday: bool, 
-        thursday: bool, 
-        friday: bool, 
-        saturday: bool, 
-        sunday: bool, 
-        time_start: string, 
+        id_timeslot: int,
+        id_annonce: int,
+        monday: bool,
+        tuesday: bool,
+        wednesday: bool,
+        thursday: bool,
+        friday: bool,
+        saturday: bool,
+        sunday: bool,
+        time_start: string,
         time_end: string
         }
     Returns the updated timeslot if successful
@@ -464,8 +464,8 @@ def set_timeslot():
         # get timeslots from id_timeslot
         index_timeslot = next((i for i, item in enumerate(timeslots) if item["id_timeslot"] == id_timeslot), None)
         if index_timeslot is not None:
-            updated_timeslot = {"id_timeslot":id_timeslot, "id_annonce":id_annonce, "monday":monday, 
-            "tuesday":tuesday, "wednesday":wednesday, "thursday":thursday, "friday":friday, 
+            updated_timeslot = {"id_timeslot":id_timeslot, "id_annonce":id_annonce, "monday":monday,
+            "tuesday":tuesday, "wednesday":wednesday, "thursday":thursday, "friday":friday,
             "saturday":saturday, "sunday":sunday, "time_start":time_start, "time_end":time_end}
             # save to configfile
             config["TIME_SLOTS"][index_timeslot] = updated_timeslot
@@ -551,7 +551,7 @@ def stream_events():
                 yield "\n\n"
                 last_hello_time = current_time
             # Attendre 1 seconde avant de renvoyer la prochaine valeur
-            time.sleep(1) 
+            time.sleep(1)
     return Response(generate_stream(), mimetype='text/event-stream')
 
 
