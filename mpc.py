@@ -4,7 +4,6 @@ mpc = MPDClient()
 
 def mpc_connect():
     mpc.connect("localhost", 6600)
-    mpc.update()
 
 def mpc_disconnect(mpc):
     mpc.close()
@@ -17,6 +16,7 @@ def mpc_init():
 
 def mpc_play(filename):
     mpc_connect()
+    mpc.update()
     mpc.add(filename)
     mpc.play()
     mpc_disconnect(mpc)
