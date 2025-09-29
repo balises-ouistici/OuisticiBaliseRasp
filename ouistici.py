@@ -32,10 +32,10 @@ HTTP_PORT_RTL433 = 8433
 HTTP_PORT_SERVER = 5000
 VOLUME = configYAML["INFOS"]["volume"]
 AUTOVOLUME = configYAML["DEFAULT"]["autovolume"]
-CALL_BUTTON_ENABLED = True
-CALL_BUTTON = 4
-NAV_BUTTON_ENABLED = False
-NAV_BUTTON = 17
+CALL_BUTTON_ENABLED = configYAML["OPTIONS"]["call_button_enabled"]
+CALL_BUTTON = configYAML["OPTIONS"]["call_button"]
+NAV_BUTTON_ENABLED = configYAML["OPTIONS"]["nav_button_enabled"]
+NAV_BUTTON = configYAML["OPTIONS"]["nav_button"]
 
 # Initialize MPD client
 mpc = LockableMPDClient()

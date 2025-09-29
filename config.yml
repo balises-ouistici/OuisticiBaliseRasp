@@ -24,4 +24,8 @@ OPTIONS:
   multiple_announces: true
   internet_access: true
   tts: false
+  call_button: 4
+  call_button_enabled: true
+  nav_button: 17
+  nav_button_enabled: false
 TIME_SLOTS: []
