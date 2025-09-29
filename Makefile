@@ -9,13 +9,13 @@ install.rpi: dependencies.rpi configure_mpd deploy
 
 dependencies:
 	apt update
-	apt install -y python3-pip python3-venv rtl-433 libasound2-dev mpd mpc tmux
+	apt install -y python3-pip python3-venv rtl-433 libasound2-dev mpd mpc espeak-ng tmux
 	python3 -m venv ouistici
 	grep -v '^rpi.lgpio' requirements.txt | ouistici/bin/pip install -r /dev/stdin
 
 dependencies.rpi:
 	apt update
-	apt install -y python3-pip python3-venv rtl-433 libasound2-dev mpd tmux
+	apt install -y python3-pip python3-venv rtl-433 libasound2-dev mpd mpc espeak-ng tmux
 	python3 -m venv ouistici
 	ouistici/bin/pip install -r requirements.txt
 
