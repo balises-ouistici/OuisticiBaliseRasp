@@ -14,20 +14,7 @@ import os
 from utils import get_local_ip
 import requests
 import json
-import uuid
-
-
-# generate uuid if none exists in uuid.conf
-def generate_uuid():
-    try:
-        with open("uuid.conf", "r") as f:
-            return f.read()
-    except FileNotFoundError:
-        new_uuid = str(uuid.uuid4())
-        with open("uuid.conf", "w") as f:
-            f.write(new_uuid)
-        return new_uuid
-
+from utils import generate_uuid
 
 CONFIG_FILE = "config.yml"
 
