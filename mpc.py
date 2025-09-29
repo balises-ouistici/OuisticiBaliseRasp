@@ -1,27 +1,20 @@
 from mpd import MPDClient
+from threading import Lock
 
-mpc = MPDClient()
 
-def mpc_connect():
-    mpc.connect("localhost", 6600)
+class LockableMPDClient(MPDClient):
+    def __init__(self):
+        super(LockableMPDClient, self).__init__()
+        self._lock = Lock()
 
-def mpc_disconnect(mpc):
-    mpc.close()
-    mpc.disconnect()
+    def acquire(self):
+        self._lock.acquire()
 
-def mpc_init():
-    mpc_connect()
-    mpc.consume(1)
-    mpc_disconnect(mpc)
+    def release(self):
+        self._lock.release()
 
-def mpc_play(filename):
-    mpc_connect()
-    mpc.update()
-    mpc.add(filename)
-    mpc.play()
-    mpc_disconnect(mpc)
+    def __enter__(self):
+        self.acquire()
 
-def mpc_set_vol(volume):
-    mpc_connect()
-    mpc.setvol(volume)
-    mpc_disconnect(mpc)
+    def __exit__(self, type, value, traceback):
+        self.release()
