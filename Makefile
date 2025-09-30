@@ -15,7 +15,7 @@ dependencies:
 
 dependencies.rpi:
 	apt update
-	apt install -y python3-pip python3-venv rtl-433 libasound2-dev mpd mpc espeak-ng tmux
+	apt install -y python3-pip python3-venv python3-dev rtl-433 alsa-utils libasound2-dev mpd mpc espeak-ng tmux gcc swig liblgpio-dev
 	python3 -m venv ouistici
 	ouistici/bin/pip install -r requirements.txt
 
