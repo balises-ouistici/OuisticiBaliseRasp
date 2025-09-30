@@ -36,7 +36,7 @@ configure_mpd.rpi:
 	cat config/mpd_audio.rpi.conf >> /etc/mpd.conf
 	# Move media to mpd dir and link it back to media
 	mv media /var/lib/mpd/music/
-	ln -s /var/lib/mpd/music/media /media
+	ln -s /var/lib/mpd/music/media $(INSTALL_DIR)/media/
 	# Launch MPD at boot
 	systemctl enable --now mpd
 
