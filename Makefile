@@ -5,7 +5,7 @@ INSTALL_DIR = $(shell pwd)
 RTL_433_BIN = $(shell which rtl_433)
 
 install: dependencies configure_mpd deploy
-install.rpi: dependencies.rpi configure_mpd deploy
+install.rpi: dependencies.rpi configure_mpd.rpi deploy
 
 dependencies:
 	apt update
@@ -21,6 +21,14 @@ dependencies.rpi:
 
 configure_mpd:
 	cat config/mpd_audio.conf >> /etc/mpd.conf
+	ln -s $(INSTALL_DIR)/media/ /var/lib/mpd/music/
+	systemctl restart mpd
+
+configure_mpd.rpi:
+	sed -i '/^dtparam=audio=on/s/^/#/' /boot/firmware/config.txt
+	echo 'dtoverlay=rpi-codeczero' | tee -a /boot/firmware/config.txt
+	cp config/asound.conf /etc/asound.conf
+	cat config/mpd_audio.rpi.conf >> /etc/mpd.conf
 	ln -s $(INSTALL_DIR)/media/ /var/lib/mpd/music/
 	systemctl restart mpd
 
