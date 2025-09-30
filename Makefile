@@ -27,6 +27,7 @@ configure_mpd:
 configure_mpd.rpi:
 	# Disable internal audio
 	sed -i 's|^dtparam=audio=on$$|dtparam=audio=off|' /boot/firmware/config.txt
+	sed -i '/dtoverlay=vc4-kms-v3d/d' /boot/firmware/config.txt
 	# Enable rpi-codeczero
 	echo 'dtoverlay=rpi-codeczero' | tee -a /boot/firmware/config.txt
 	# Add ALSA config for rpi-codeczero
