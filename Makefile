@@ -26,8 +26,8 @@ configure_mpd:
 
 configure_mpd.rpi:
 	# Disable internal audio
-    sed -i 's/^dtparam=audio=on$/dtparam=audio=off/' /boot/firmware/config.txt
-    # Enable rpi-codeczero
+	sed -i 's/^dtparam=audio=on$/dtparam=audio=off/' /boot/firmware/config.txt
+	# Enable rpi-codeczero
 	echo 'dtoverlay=rpi-codeczero' | tee -a /boot/firmware/config.txt
 	# Add ALSA config for rpi-codeczero
 	curl -O https://raw.githubusercontent.com/raspberrypi/Pi-Codec/refs/heads/master/Codec_Zero_Playback_only.state
