@@ -31,7 +31,7 @@ configure_mpd.rpi:
 	echo 'dtoverlay=rpi-codeczero' | tee -a /boot/firmware/config.txt
 	# Add ALSA config for rpi-codeczero
 	curl -O https://raw.githubusercontent.com/raspberrypi/Pi-Codec/refs/heads/master/Codec_Zero_Playback_only.state
-	alsactl restore -f Pi-Codec/Codec_Zero_Playback_only.state
+	alsactl restore -f Codec_Zero_Playback_only.state
 	# Add MPD configuration for rpi-codeczero
 	cat config/mpd_audio.rpi.conf >> /etc/mpd.conf
 	# Move media to mpd dir and link it back to media
