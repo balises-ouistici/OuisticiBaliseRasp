@@ -5,7 +5,7 @@ Description=Ouistici main app
 #After=network.target
 
 [Service]
-ExecStart=/bin/bash -c "source INSTALL_DIR/ouistici/bin/activate && python INSTALL_DIR/ouistici.py"
+ExecStart=/bin/bash -c "alsactl restore -f INSTALL_DIR/Codec_Zero_Playback_only.state || true && source INSTALL_DIR/ouistici/bin/activate && python INSTALL_DIR/ouistici.py"
 WorkingDirectory=INSTALL_DIR
 
 # Automatically restart the service if it crashes
