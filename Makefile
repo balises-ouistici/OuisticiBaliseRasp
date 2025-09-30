@@ -25,12 +25,20 @@ configure_mpd:
 	systemctl restart mpd
 
 configure_mpd.rpi:
-	sed -i '/^dtparam=audio=on/s/^/#/' /boot/firmware/config.txt
+	# Disable internal audio
+    sed -i 's/^dtparam=audio=on$/dtparam=audio=off/' /boot/firmware/config.txt
+    # Enable rpi-codeczero
 	echo 'dtoverlay=rpi-codeczero' | tee -a /boot/firmware/config.txt
-	cp config/asound.conf /etc/asound.conf
+	# Add ALSA config for rpi-codeczero
+	curl -O https://raw.githubusercontent.com/raspberrypi/Pi-Codec/refs/heads/master/Codec_Zero_Playback_only.state
+	alsactl restore -f Pi-Codec/Codec_Zero_Playback_only.state
+	# Add MPD configuration for rpi-codeczero
 	cat config/mpd_audio.rpi.conf >> /etc/mpd.conf
-	ln -s $(INSTALL_DIR)/media/ /var/lib/mpd/music/
-	systemctl restart mpd
+	# Move media to mpd dir and link it back to media
+	mv media /var/lib/mpd/music/
+	ln -s /var/lib/mpd/music/media /media
+	# Launch MPD at boot
+	systemctl enable --now mpd
 
 deploy:
 	cat config/ouistici.service | sed 's|INSTALL_DIR|$(INSTALL_DIR)|g' > /etc/systemd/system/ouistici.service
@@ -40,6 +48,7 @@ deploy:
 	systemctl enable --now ouistici_rtl_433.service
 	systemctl enable --now ouistici_serverconfig.service
 	systemctl enable --now ouistici.service
+	reboot
 
 test:
 	tmux new-session -d -s ouistici
