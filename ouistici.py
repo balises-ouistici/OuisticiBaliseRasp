@@ -39,6 +39,12 @@ NAV_BUTTON = configYAML["OPTIONS"]["nav_button"]
 
 # Initialize MPD client
 mpc = LockableMPDClient()
+with mpc:
+    mpc.connect("localhost", 6600)
+    mpc.consume(1)
+    mpc.update()
+    mpc.close()
+    mpc.disconnect()
 
 
 def stream_events(http_host, http_port):
@@ -143,8 +149,6 @@ def sound_to_play():
 def play_sound(soundfile):
     with mpc:
         mpc.connect("localhost", 6600)
-        mpc.consume(1)
-        mpc.update()
         mpc.add(soundfile)
         mpc.setvol(configYAML["INFOS"]["volume"])
         mpc.play()

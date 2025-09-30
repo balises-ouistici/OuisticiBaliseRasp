@@ -22,7 +22,7 @@ dependencies.rpi:
 configure_mpd:
 	cat config/mpd_audio.conf >> /etc/mpd.conf
 	ln -s $(INSTALL_DIR)/media/ /var/lib/mpd/music/
-	systemctl restart mpd
+	systemctl enable --now mpd
 
 configure_mpd.rpi:
 	# Disable internal audio
